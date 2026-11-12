@@ -151,14 +151,14 @@
     /* face: a fine twill weave with a lime pinstripe set inside the guard */
     var TW = 512, TH2 = Math.round(TW * 0.295 / 0.19), K = TW / 0.19;
     var faceT = canvasTex(TW, TH2, function (c) {
-      c.fillStyle = "#575a55"; c.fillRect(0, 0, TW, TH2);
+      c.fillStyle = "#4b4e4a"; c.fillRect(0, 0, TW, TH2);
       for (var y = 0; y < TH2; y += 4) for (var x = 0; x < TW; x += 4) {
         var on = ((x >> 2) + (y >> 2)) % 4 < 2; c.fillStyle = on ? "rgba(255,255,255,.055)" : "rgba(0,0,0,.08)"; c.fillRect(x, y, 4, 4);
       }
       for (var i = 0; i < 4000; i++) { c.fillStyle = Math.random() < 0.5 ? "rgba(255,255,255,.035)" : "rgba(0,0,0,.05)"; c.fillRect(Math.random() * TW, Math.random() * TH2, 1, 1); }
       var ox = TW / 2, oy = TOP * K;
       c.strokeStyle = "rgba(20,22,20,.35)"; c.lineWidth = 10; tracePath(c, K, ox, oy, 0.006); c.stroke();
-      c.strokeStyle = "#cfe04a"; c.lineWidth = 2.2; tracePath(c, K, ox, oy, 0.014); c.stroke();
+      c.strokeStyle = "rgba(207,224,74,.55)"; c.lineWidth = 1.4; tracePath(c, K, ox, oy, 0.014); c.stroke();
     });
     faceT.repeat.set(1 / 0.19, 1 / 0.295); faceT.offset.set(0.5, 0.14 / 0.295); faceT.anisotropy = 8;
     var faceM = new THREE.MeshPhysicalMaterial({ map: faceT, roughness: 0.62, metalness: 0.05, clearcoat: 0.25, clearcoatRoughness: 0.5 });
@@ -171,9 +171,42 @@
     var ring = start > 0 ? op.slice(start).concat(op.slice(0, start)) : op;
     var gc = new THREE.CatmullRomCurve3(ring.map(function (p) { return new V3(p.x, p.y, 0); }));
     var guard = new THREE.Mesh(new THREE.TubeGeometry(gc, 160, TH + 0.0012, 8, false), guardM); guard.scale.set(1, 1, 1); guard.castShadow = true; g.add(guard);
-    /* wordmark on both faces */
-    var wm = canvasTex(256, 64, function (c) { c.clearRect(0, 0, 256, 64); c.fillStyle = "#E4F23F"; c.font = "900 44px 'Big Shoulders Display','Arial Narrow',sans-serif"; c.textAlign = "center"; c.fillText("NINJAPB", 128, 48); });
-    [1, -1].forEach(function (s) { var d = plane(0.09, 0.0225, new THREE.MeshStandardMaterial({ map: wm, transparent: true, roughness: 0.6, depthWrite: false })); d.position.set(0, -0.085, (TH + 0.0003) * s); if (s < 0) d.rotation.y = Math.PI; g.add(d); });
+    /* brand on both faces: a large satin-silver foil NINJA with a soft debossed shadow and a lime hairline, and a
+       small gloss-on-matte shuriken above the sweet spot */
+    function wordmark(c, W2, H2, shadow) {
+      c.clearRect(0, 0, W2, H2);
+      var fs = H2 * 0.9, letters = "NINJA".split(""), track = fs * 0.16;
+      c.font = "800 " + fs + "px 'Big Shoulders Display','Arial Narrow',sans-serif"; c.textBaseline = "alphabetic";
+      var widths = letters.map(function (l) { return c.measureText(l).width; }), total = widths.reduce(function (x, y) { return x + y; }, 0) + track * (letters.length - 1);
+      var sc = Math.min(1, (W2 * 0.94) / total), x = (W2 - total * sc) / 2;
+      c.save(); c.translate(x, H2 * 0.88); c.scale(sc, 1);
+      if (shadow) { c.filter = "blur(" + Math.round(H2 * 0.035) + "px)"; }
+      c.fillStyle = "#fff"; var px = 0;
+      letters.forEach(function (l, i) { c.fillText(l, px, 0); px += widths[i] + track; });
+      c.restore(); c.filter = "none";
+    }
+    function brandTex(shadow) {
+      var t = canvasTex(1024, 256, function (c) { wordmark(c, 1024, 256, shadow); });
+      if (document.fonts && document.fonts.load) document.fonts.load("800 100px 'Big Shoulders Display'").then(function () { wordmark(t.image.getContext("2d"), 1024, 256, shadow); t.needsUpdate = true; }).catch(function () {});
+      return t;
+    }
+    var foilM = new THREE.MeshPhysicalMaterial({ color: col(0xdfe2dc), emissive: col(0x30322f), alphaMap: brandTex(false), transparent: true, metalness: 0.55, roughness: 0.36, clearcoat: 0.6, clearcoatRoughness: 0.25, depthWrite: false });
+    var dbM = new THREE.MeshBasicMaterial({ color: 0x000000, alphaMap: brandTex(true), transparent: true, opacity: 0.45, depthWrite: false });
+    var lineM = new THREE.MeshStandardMaterial({ color: col(0xE4F23F), roughness: 0.5 });
+    var shurT = canvasTex(256, 256, function (c) {
+      c.clearRect(0, 0, 256, 256); c.translate(128, 128); c.fillStyle = "#fff"; c.beginPath();
+      for (var i = 0; i < 8; i++) { var a3 = i * Math.PI / 4 - Math.PI / 2, r3 = i % 2 ? 34 : 118; c.lineTo(Math.cos(a3) * r3, Math.sin(a3) * r3); }
+      c.closePath(); c.moveTo(18, 0); c.arc(0, 0, 18, 0, Math.PI * 2, true); c.fill("evenodd");
+    });
+    var shurM = new THREE.MeshPhysicalMaterial({ color: col(0x3a3d39), alphaMap: shurT, transparent: true, roughness: 0.18, metalness: 0.2, clearcoat: 1, clearcoatRoughness: 0.08, depthWrite: false });
+    [1, -1].forEach(function (s) {
+      var z = (TH + 0.0003) * s;
+      function decal(w, h, m, x, y, dz) { var d = plane(w, h, m); d.position.set(x, y, z + dz * s); if (s < 0) d.rotation.y = Math.PI; d.renderOrder = 2; g.add(d); return d; }
+      decal(0.168, 0.052, dbM, 0.0007, -0.0567, 0);           /* debossed shadow, a hair low and right */
+      decal(0.168, 0.052, foilM, 0, -0.056, 0.0002);
+      decal(0.06, 0.0013, lineM, 0, -0.0905, 0.0002);
+      decal(0.036, 0.036, shurM, 0, 0.088, 0.0002);
+    });
     /* throat collar and handle (flattened octagon) */
     var gripT = canvasTex(64, 256, function (c) {
       c.fillStyle = "#8f918a"; c.fillRect(0, 0, 64, 256);
