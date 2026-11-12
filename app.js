@@ -164,6 +164,25 @@
   function rigOf(cloth, shadeC, accent, arrow) { return NinjaRig.create(THREE, scene, { col: col, cloth: cloth, shade: shadeC, accent: accent, paddle: makePaddle(arrow) }); }
   var A = { you: rigOf(0x1c2a47, 0x101a30, 0xE4F23F, true), partner: rigOf(0xe9eef5, 0xb9c4d4, 0xE4F23F), o1: rigOf(0xd9472f, 0x8f2a1a, 0x0b1e3b), o2: rigOf(0xd9472f, 0x8f2a1a, 0x0b1e3b) };
   var racket = A.you.paddle;
+  /* preview of the AI-generated mascot (TRELLIS, static, no skeleton yet): open the page with ?preview=mascot */
+  var mascot = null;
+  if (/[?&]preview=mascot\b/.test(location.search)) {
+    var gl = document.createElement("script"); gl.src = "/vendor/GLTFLoader.js";
+    gl.onload = function () {
+      new THREE.GLTFLoader().load("/models/ninja-mascot.glb", function (g) {
+        var m = g.scene, H = 1.35;
+        m.traverse(function (o) { if (o.isMesh) { o.geometry.computeVertexNormals(); o.material.metalness = 0; o.material.roughness = 0.55; o.material.envMapIntensity = 0.7; o.castShadow = true; } });
+        var box = new THREE.Box3().setFromObject(m), size = box.getSize(new V3()), k = H / size.y;
+        m.scale.setScalar(k); m.position.y = -box.min.y * k;
+        mascot = new THREE.Group(); mascot.add(m); mascot.position.set(-0.7, 0, 4.4); scene.add(mascot);
+        var tag = label("新角色預覽（尚未綁骨架）", "#E4F23F", 0.24); tag.position.set(0, H + 0.35, 0); mascot.add(tag);
+        var sh = plane(1.1, 1.1, new THREE.MeshBasicMaterial({ map: contactT, transparent: true, depthWrite: false, toneMapped: false })); sh.rotation.x = -Math.PI / 2; sh.position.y = 0.012; mascot.add(sh);
+        if (window.__pb) window.__pb.mascot = mascot;
+        wake();
+      });
+    };
+    document.body.appendChild(gl);
+  }
   /* soft contact shadow under every ninja so their feet sit on the court */
   var contactT = canvasTex(128, 128, function (g) { var r = g.createRadialGradient(64, 64, 4, 64, 64, 64); r.addColorStop(0, "rgba(0,8,24,.55)"); r.addColorStop(0.55, "rgba(0,8,24,.22)"); r.addColorStop(1, "rgba(0,8,24,0)"); g.fillStyle = r; g.fillRect(0, 0, 128, 128); });
   IDS.forEach(function (id) { var m = plane(0.95, 0.95, new THREE.MeshBasicMaterial({ map: contactT, transparent: true, depthWrite: false, toneMapped: false })); m.rotation.x = -Math.PI / 2; m.renderOrder = 1; scene.add(m); A[id].contact = m; });
@@ -513,7 +532,8 @@
   var last = 0;
   function frame(now) {
     var raw = now - last, dt = Math.min(0.05, raw / 1000 || 0); last = now;
-    if (!S.playing && !Rec.on && now > wakeUntil) { requestAnimationFrame(frame); return; }
+    if (mascot) mascot.rotation.y += Math.min(0.05, raw / 1000 || 0) * 0.7;
+    if (!S.playing && !Rec.on && !mascot && now > wakeUntil) { requestAnimationFrame(frame); return; }
     watchPerf(raw);
     if (S.playing) {
       var rate = S.speed;
