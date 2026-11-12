@@ -15,6 +15,7 @@
   catch (e) { $("#nogl").hidden = false; return; }
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
   renderer.outputEncoding = THREE.sRGBEncoding;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 0.62;
   renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   function col(h) { return new THREE.Color(h).convertSRGBToLinear(); }
   var scene = new THREE.Scene();
@@ -33,11 +34,13 @@
     try { var pm = new THREE.PMREMGenerator(renderer); scene.environment = pm.fromEquirectangular(t).texture; pm.dispose(); } catch (e) {}
   })();
   scene.fog = new THREE.Fog(col(0x071E3D), 45, 120);
-  scene.add(new THREE.HemisphereLight(0xcfe2ff, 0x0b2a52, 0.55));
-  var sun = new THREE.DirectionalLight(0xfff6e0, 0.95); sun.position.set(7, 17, 9); sun.castShadow = true;
-  sun.shadow.mapSize.set(2048, 2048); sun.shadow.bias = -0.0004; sun.shadow.radius = 3;
-  var sc0 = sun.shadow.camera; sc0.left = -13; sc0.right = 13; sc0.top = 14; sc0.bottom = -14; sc0.near = 1; sc0.far = 50; scene.add(sun);
-  var fill = new THREE.DirectionalLight(0x9cc8ff, 0.3); fill.position.set(-8, 10, -9); scene.add(fill);
+  scene.add(new THREE.HemisphereLight(0xd6e6ff, 0x0b2a52, 0.6));
+  var sun = new THREE.DirectionalLight(0xfff3dc, 1.2); sun.position.set(7, 17, 9); sun.castShadow = true;
+  sun.shadow.mapSize.set(2048, 2048); sun.shadow.bias = -0.0003; sun.shadow.normalBias = 0.02;
+  var sc0 = sun.shadow.camera; sc0.left = -8; sc0.right = 8; sc0.top = 11; sc0.bottom = -11; sc0.near = 1; sc0.far = 50; scene.add(sun);
+  var fill = new THREE.DirectionalLight(0x9cc8ff, 0.35); fill.position.set(-8, 10, -9); scene.add(fill);
+  /* rim light: sits behind whatever the camera looks at, low and cool, so every ninja gets a bright outline */
+  var rim = new THREE.DirectionalLight(0xcfe6ff, 1.3); scene.add(rim); scene.add(rim.target);
 
   /* ---------- helpers ---------- */
   function canvasTex(w, h, draw) { var c = document.createElement("canvas"); c.width = w; c.height = h; draw(c.getContext("2d"), w, h); var t = new THREE.CanvasTexture(c); t.anisotropy = 8; t.encoding = THREE.sRGBEncoding; return t; }
@@ -48,11 +51,11 @@
     g.font = font; g.fillStyle = "rgba(7,30,61,.78)"; g.fillRect(0, 0, c.width, c.height);
     g.fillStyle = color || "#F3F7FB"; g.textBaseline = "middle"; g.fillText(text, pad, c.height / 2 + 2);
     var lt = new THREE.CanvasTexture(c); lt.encoding = THREE.sRGBEncoding;
-    var sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: lt, depthTest: false, transparent: true, fog: false }));
+    var sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: lt, depthTest: false, transparent: true, fog: false, toneMapped: false }));
     var hgt = size || 0.34; sp.scale.set(hgt * c.width / c.height, hgt, 1); sp.renderOrder = 10; return sp;
   }
   function plane(w, h, mat) { return new THREE.Mesh(new THREE.PlaneGeometry(w, h), mat); }
-  function flat(w, d, color, op) { var m = plane(w, d, new THREE.MeshBasicMaterial({ color: col(color), transparent: op < 1, opacity: op, depthWrite: false })); m.rotation.x = -Math.PI / 2; return m; }
+  function flat(w, d, color, op) { var m = plane(w, d, new THREE.MeshBasicMaterial({ color: col(color), transparent: op < 1, opacity: op, depthWrite: false, toneMapped: false })); m.rotation.x = -Math.PI / 2; return m; }
   function ss(a, b, x) { x = Math.max(0, Math.min(1, (x - a) / (b - a))); return x * x * (3 - 2 * x); }
   function angDiff(a, b) { var d = (b - a) % (Math.PI * 2); if (d > Math.PI) d -= Math.PI * 2; if (d < -Math.PI) d += Math.PI * 2; return d; }
   function basis(yaw) { return { r: new V3(Math.cos(yaw), 0, -Math.sin(yaw)), f: new V3(-Math.sin(yaw), 0, -Math.cos(yaw)) }; }
@@ -75,7 +78,7 @@
       });
       t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(w, h); return t;
     }
-    function slab(w, d, base, y, z, rep) { var m = plane(w, d, new THREE.MeshStandardMaterial({ map: acrylic(base, rep[0], rep[1]), roughness: 0.9, metalness: 0 })); m.rotation.x = -Math.PI / 2; m.position.set(0, y, z || 0); m.receiveShadow = true; scene.add(m); return m; }
+    function slab(w, d, base, y, z, rep) { var m = plane(w, d, new THREE.MeshStandardMaterial({ map: acrylic(base, rep[0], rep[1]), roughness: 0.86, metalness: 0, envMapIntensity: 0.25 })); m.rotation.x = -Math.PI / 2; m.position.set(0, y, z || 0); m.receiveShadow = true; scene.add(m); return m; }
     slab(46, 56, "#082338", -0.03, 0, [23, 28]);
     slab(12.4, 20.8, "#0E4A45", -0.015, 0, [8, 14]);                 /* out-of-bounds surround */
     slab(2 * HW, 2 * BL, "#1463B8", 0, 0, [4, 9]);                    /* service courts */
@@ -110,13 +113,19 @@
       beam(0.05, 0.05, 20.8, 6.24 * sx, 3, 0);
     });
     /* floodlights */
-    var lampM = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    var lampM = new THREE.MeshBasicMaterial({ color: new THREE.Color(5, 4.7, 4.1), toneMapped: false });   /* brighter than white: the only things that bloom are lamps, the ball and its trail */
+    var shaftT = canvasTex(8, 256, function (g) { var r = g.createLinearGradient(0, 0, 0, 256); r.addColorStop(0, "rgba(255,246,220,.9)"); r.addColorStop(0.55, "rgba(255,246,220,.22)"); r.addColorStop(1, "rgba(255,246,220,0)"); g.fillStyle = r; g.fillRect(0, 0, 8, 256); });
+    var shaftM = new THREE.MeshBasicMaterial({ map: shaftT, transparent: true, opacity: 0.028, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, fog: false, toneMapped: false });
     var flare = canvasTex(128, 128, function (g) { var r = g.createRadialGradient(64, 64, 2, 64, 64, 64); r.addColorStop(0, "rgba(255,252,235,1)"); r.addColorStop(0.2, "rgba(255,248,215,.5)"); r.addColorStop(1, "rgba(255,248,215,0)"); g.fillStyle = r; g.fillRect(0, 0, 128, 128); });
     [[-6.6, -9.6], [6.6, -9.6], [-6.6, 9.6], [6.6, 9.6], [-6.6, 0], [6.6, 0]].forEach(function (p) {
       var pole = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.1, 7.0, 10), STEEL); pole.position.set(p[0], 3.5, p[1]); pole.castShadow = true; scene.add(pole);
       var headBox = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.22, 1.3), STEEL); headBox.position.set(p[0] * 0.94, 7.05, p[1]); scene.add(headBox);
       var lamp = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.04, 1.2), lampM); lamp.position.set(p[0] * 0.94, 6.93, p[1]); scene.add(lamp);
-      var fl = new THREE.Sprite(new THREE.SpriteMaterial({ map: flare, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false })); fl.scale.set(2.3, 2.3, 1); fl.position.set(p[0] * 0.94, 6.9, p[1]); scene.add(fl);
+      var fl = new THREE.Sprite(new THREE.SpriteMaterial({ map: flare, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false })); fl.material.toneMapped = false; fl.material.color.setScalar(1.6); fl.scale.set(2.6, 2.6, 1); fl.position.set(p[0] * 0.94, 6.9, p[1]); scene.add(fl);
+      /* a soft cone of light aimed at the court, like haze under stadium floods */
+      var aim = new V3(p[0] * 0.25, 0, p[1] * 0.55), top = new V3(p[0] * 0.94, 6.9, p[1]), len = top.distanceTo(aim);
+      var cg = new THREE.CylinderGeometry(0.3, 2.2, len * 0.8, 28, 1, true); cg.translate(0, -len * 0.4, 0);
+      var shaft = new THREE.Mesh(cg, shaftM); shaft.position.copy(top); shaft.quaternion.setFromUnitVectors(new V3(0, -1, 0), aim.clone().sub(top).normalize()); shaft.renderOrder = 2; scene.add(shaft);
       var pl = new THREE.PointLight(0xfff3d6, 0.22, 34, 1.6); pl.position.set(p[0] * 0.9, 6.8, p[1]); scene.add(pl);
     });
     /* boards behind each end, carrying the deck's own wordmark */
@@ -155,16 +164,37 @@
   function rigOf(cloth, shadeC, accent, arrow) { return NinjaRig.create(THREE, scene, { col: col, cloth: cloth, shade: shadeC, accent: accent, paddle: makePaddle(arrow) }); }
   var A = { you: rigOf(0x1c2a47, 0x101a30, 0xE4F23F, true), partner: rigOf(0xe9eef5, 0xb9c4d4, 0xE4F23F), o1: rigOf(0xd9472f, 0x8f2a1a, 0x0b1e3b), o2: rigOf(0xd9472f, 0x8f2a1a, 0x0b1e3b) };
   var racket = A.you.paddle;
+  /* soft contact shadow under every ninja so their feet sit on the court */
+  var contactT = canvasTex(128, 128, function (g) { var r = g.createRadialGradient(64, 64, 4, 64, 64, 64); r.addColorStop(0, "rgba(0,8,24,.55)"); r.addColorStop(0.55, "rgba(0,8,24,.22)"); r.addColorStop(1, "rgba(0,8,24,0)"); g.fillStyle = r; g.fillRect(0, 0, 128, 128); });
+  IDS.forEach(function (id) { var m = plane(0.95, 0.95, new THREE.MeshBasicMaterial({ map: contactT, transparent: true, depthWrite: false, toneMapped: false })); m.rotation.x = -Math.PI / 2; m.renderOrder = 1; scene.add(m); A[id].contact = m; });
 
   /* ball */
   var ballTex = canvasTex(256, 128, function (g) { g.fillStyle = "#E4F23F"; g.fillRect(0, 0, 256, 128); g.fillStyle = "#59640c";
     for (var r = 0; r < 5; r++) for (var c = 0; c < 10; c++) { g.beginPath(); g.ellipse(c * 25.6 + (r % 2 ? 12.8 : 0) + 6, 14 + r * 25, 5.2 / Math.max(0.45, Math.sin((14 + r * 25) / 128 * Math.PI)), 5.2, 0, 0, 7); g.fill(); } });
   var ball = new THREE.Mesh(new THREE.SphereGeometry(BR, 20, 14), new THREE.MeshStandardMaterial({ map: ballTex, roughness: 0.95, emissive: col(0xE4F23F), emissiveIntensity: 0.35 })); ball.castShadow = true; scene.add(ball);
-  var glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: canvasTex(64, 64, function (g) { var r = g.createRadialGradient(32, 32, 2, 32, 32, 32); r.addColorStop(0, "rgba(228,242,63,.55)"); r.addColorStop(1, "rgba(228,242,63,0)"); g.fillStyle = r; g.fillRect(0, 0, 64, 64); }), depthWrite: false, transparent: true, blending: THREE.AdditiveBlending })); glow.scale.set(0.45, 0.45, 1); scene.add(glow);
+  var glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: canvasTex(64, 64, function (g) { var r = g.createRadialGradient(32, 32, 2, 32, 32, 32); r.addColorStop(0, "rgba(228,242,63,.55)"); r.addColorStop(1, "rgba(228,242,63,0)"); g.fillStyle = r; g.fillRect(0, 0, 64, 64); }), depthWrite: false, transparent: true, blending: THREE.AdditiveBlending, toneMapped: false })); glow.material.color.setScalar(1.9); glow.scale.set(0.5, 0.5, 1); scene.add(glow);
   var bShadow = flat(0.22, 0.22, 0x000000, 0.4); bShadow.geometry = new THREE.CircleGeometry(0.11, 20); scene.add(bShadow);
+  /* trail: a glowing ribbon that always faces the camera, wide and hot at the ball, fading to nothing */
   var TRAIL = 46, trailPos = new Float32Array(TRAIL * 3), trailGeo = new THREE.BufferGeometry();
-  trailGeo.setAttribute("position", new THREE.BufferAttribute(trailPos, 3));
-  var trail = new THREE.Line(trailGeo, new THREE.LineBasicMaterial({ color: col(C.ball), transparent: true, opacity: 0.85 })); trail.frustumCulled = false; scene.add(trail);
+  var ribPos = new Float32Array(TRAIL * 2 * 3), ribCol = new Float32Array(TRAIL * 2 * 3), ribIdx = [];
+  for (var ti = 0; ti < TRAIL - 1; ti++) { var a0 = ti * 2; ribIdx.push(a0, a0 + 1, a0 + 2, a0 + 1, a0 + 3, a0 + 2); }
+  trailGeo.setAttribute("position", new THREE.BufferAttribute(ribPos, 3)); trailGeo.setAttribute("color", new THREE.BufferAttribute(ribCol, 3)); trailGeo.setIndex(ribIdx);
+  var trail = new THREE.Mesh(trailGeo, new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, toneMapped: false, fog: false }));
+  trail.frustumCulled = false; scene.add(trail);
+  var TC = new THREE.Color(C.ball).convertSRGBToLinear();
+  function ribbon(n) {
+    var p = trailPos, k, prev = new V3(), cur = new V3(), dir = new V3(), side = new V3(), view = new V3();
+    for (k = 0; k < TRAIL; k++) {
+      var j = Math.min(k, Math.max(0, n - 1)); cur.set(p[j * 3], p[j * 3 + 1], p[j * 3 + 2]);
+      var jn = Math.min(j + 1, Math.max(0, n - 1)), jp = Math.max(j - 1, 0);
+      dir.set(p[jp * 3] - p[jn * 3], p[jp * 3 + 1] - p[jn * 3 + 1], p[jp * 3 + 2] - p[jn * 3 + 2]);
+      view.copy(cam.position).sub(cur); side.crossVectors(dir, view); if (side.lengthSq() < 1e-9) side.set(0, 1, 0); side.normalize();
+      var f = k < n ? 1 - k / Math.max(1, n - 1) : 0, w = 0.045 * Math.pow(f, 0.7);
+      ribPos.set([cur.x + side.x * w, cur.y + side.y * w, cur.z + side.z * w, cur.x - side.x * w, cur.y - side.y * w, cur.z - side.z * w], k * 6);
+      var near = Math.min(1, Math.max(0.15, (view.length() - 0.5) / 2.2)), c = 1.7 * f * f * near; ribCol.set([TC.r * c, TC.g * c, TC.b * c, TC.r * c, TC.g * c, TC.b * c], k * 6);
+    }
+    trailGeo.attributes.position.needsUpdate = true; trailGeo.attributes.color.needsUpdate = true;
+  }
   var pathGroup = new THREE.Group(), markGroup = new THREE.Group(), fxGroup = new THREE.Group(); scene.add(pathGroup); scene.add(markGroup); scene.add(fxGroup);
 
   /* ---------- sound: synthesised pickleball impacts (paddle pock, hard-court bounce, net) ---------- */
@@ -308,21 +338,21 @@
     S.ci = ci; S.vi = vi; var ch = CH[ci], v = ch.v[vi];
     TL = build(v); prevT = -9; S.t = -0.6; S.playing = true; S.yawOff = S.pitchOff = 0; camSnap = true; lastCap = ""; lastHitKey = "";
     if (!keepView) S.view = ch.view || "fp";
-    for (var i = 0; i < TRAIL * 3; i++) trailPos[i] = 0; trail.geometry.setDrawRange(0, 0);
+    for (var i = 0; i < TRAIL * 3; i++) trailPos[i] = 0; trail.userData.n = 0;
     /* trajectory preview */
     clearGroup(pathGroup);
     TL.segs.forEach(function (g) {
       var pts = []; for (var k = 0; k <= 26; k++) { var u = g.T * k / 26; pts.push(new V3(g.a.x + (g.b.x - g.a.x) * k / 26, g.a.y + g.vy * u - 0.5 * G * u * u, g.a.z + (g.b.z - g.a.z) * k / 26)); }
-      var l = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineDashedMaterial({ color: col(g.mine ? C.ball : C.line), dashSize: 0.22, gapSize: 0.16, transparent: true, opacity: g.mine ? 0.9 : 0.4 }));
+      var l = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineDashedMaterial({ toneMapped: false, color: col(g.mine ? C.ball : C.line), dashSize: 0.22, gapSize: 0.16, transparent: true, opacity: g.mine ? 0.9 : 0.4 }));
       l.computeLineDistances(); pathGroup.add(l);
     });
-    TL.N.forEach(function (n, idx) { if (!n.floor || idx === 0) return; var r = new THREE.Mesh(new THREE.RingGeometry(0.13, 0.19, 28), new THREE.MeshBasicMaterial({ color: col(C.ball), transparent: true, opacity: 0.8, depthWrite: false })); r.rotation.x = -Math.PI / 2; r.position.set(n.pos.x, 0.012, n.pos.z); pathGroup.add(r); });
+    TL.N.forEach(function (n, idx) { if (!n.floor || idx === 0) return; var r = new THREE.Mesh(new THREE.RingGeometry(0.13, 0.19, 28), new THREE.MeshBasicMaterial({ toneMapped: false, color: col(C.ball), transparent: true, opacity: 0.8, depthWrite: false })); r.rotation.x = -Math.PI / 2; r.position.set(n.pos.x, 0.012, n.pos.z); pathGroup.add(r); });
     /* impact pulses: one expanding ring per contact with floor, net or paddle */
     clearGroup(fxGroup); pulses = [];
     TL.N.forEach(function (n) {
       if (!n.surf) return;
       var c = n.surf === "net" ? 0xFF6A4D : 0xE4F23F;
-      var r = new THREE.Mesh(new THREE.RingGeometry(0.16, 0.2, 36), new THREE.MeshBasicMaterial({ color: col(c), transparent: true, opacity: 0, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending }));
+      var r = new THREE.Mesh(new THREE.RingGeometry(0.16, 0.2, 36), new THREE.MeshBasicMaterial({ toneMapped: false, color: col(c), transparent: true, opacity: 0, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending }));
       r.position.copy(n.pos);
       if (n.surf === "floor") { r.rotation.x = -Math.PI / 2; r.position.y = 0.02; }
       else if (n.surf === "racket") r.userData.face = true;
@@ -364,6 +394,7 @@
       var first = TL.ah[id][0], hold = !!first && first.key === "serve" && t < first.t - 0.1;
       fig.update({ root: new V3(st.x, 0, st.z), yaw: st.yaw, vel: st.vel, gait: st.gait, t: t, hand: pose.pos.clone().add(new V3(0, -0.25, 0).applyQuaternion(pose.q)), pPos: pose.pos, pQ: pose.q,
         w: pose.w, bh: !!(pose.hit && pose.hit.bh), ball: bp, hold: hold, hop: hop * (1 - pose.w), split: split * (1 - pose.w) });
+      fig.contact.position.set(st.x, 0.011, st.z); fig.contact.visible = fig.group.visible && !(id === "you" && S.view === "fp");
       if (id === "you") { ys = st; rp = pose; }
     });
     var lift = A.you.eye.y - 1.5;
@@ -377,7 +408,7 @@
     /* trail */
     if (dt > 0 && t > TL.start && t < TL.end + 0.1) { trailPos.copyWithin(3, 0, (TRAIL - 1) * 3); trailPos[0] = bp.x; trailPos[1] = bp.y; trailPos[2] = bp.z; trail.userData.n = Math.min(TRAIL, (trail.userData.n || 0) + 1); }
     if (dt === 0) trail.userData.n = 0;
-    trail.geometry.setDrawRange(0, trail.userData.n || 0); trailGeo.attributes.position.needsUpdate = true;
+    ribbon(trail.userData.n || 0);
     pathGroup.visible = S.showPath;
     /* impact pulses */
     pulses.forEach(function (p) { var s = (t - p.t) / 0.45; if (s < 0 || s > 1) { p.m.visible = false; return; } p.m.visible = true; var k2 = 1 + s * p.big; p.m.scale.set(k2, k2, k2); p.m.material.opacity = 0.9 * (1 - s); if (p.m.userData.face) p.m.quaternion.copy(cam.quaternion); });
@@ -403,8 +434,50 @@
     }
     if (window.__camDbg) { cam.position.fromArray(window.__camDbg, 0); cam.up.set(0, 1, 0); cam.lookAt(new V3().fromArray(window.__camDbg, 3)); }
     camSnap = false;
+    var bd = ball.position.distanceTo(cam.position), nearK = Math.min(1, Math.max(0, (bd - 0.5) / 2.2));
+    glow.material.color.setScalar(0.35 + 1.55 * nearK); glow.material.opacity = 0.35 + 0.65 * nearK;
+    var back = new V3(0, 0, -1).applyQuaternion(cam.quaternion); back.y = 0; if (back.lengthSq() < 1e-6) back.set(0, 0, -1); back.normalize();
+    rim.target.position.copy(cam.position).addScaledVector(back, 6); rim.target.position.y = 0.8;
+    rim.position.copy(rim.target.position).addScaledVector(back, 8); rim.position.y = 3.2;
     ui.tick(t, rp.hit, faceDeg);
   }
+
+  /* ---------- post-processing: MSAA, bloom on the hot lamps / ball / trail, colour grade and vignette ---------- */
+  var FX = (function () {
+    var ok = !!(THREE.EffectComposer && THREE.RenderPass && THREE.UnrealBloomPass && THREE.ShaderPass && renderer.capabilities.isWebGL2 && THREE.WebGLMultisampleRenderTarget);
+    var on = ok, composer = null, bloom = null, grade = null;
+    var GRADE = {
+      uniforms: { tDiffuse: { value: null }, vig: { value: 0.3 }, sat: { value: 1.18 }, aspect: { value: 1 } },
+      vertexShader: "varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }",
+      fragmentShader: [
+        "uniform sampler2D tDiffuse; uniform float vig; uniform float sat; uniform float aspect; varying vec2 vUv;",
+        "vec3 toSRGB(vec3 c){ return mix(c * 12.92, 1.055 * pow(c, vec3(1.0 / 2.4)) - 0.055, step(vec3(0.0031308), c)); }",
+        "void main(){",
+        "  vec3 c = toSRGB(clamp(texture2D(tDiffuse, vUv).rgb, 0.0, 1.0));",
+        "  float l = dot(c, vec3(0.299, 0.587, 0.114)); c = mix(vec3(l), c, sat);",
+        "  c = mix(c, c * c * (3.0 - 2.0 * c), 0.12);",
+        "  vec2 d = (vUv - 0.5) * vec2(aspect, 1.0); float v = smoothstep(1.05, 0.35, length(d) / max(aspect, 1.0) * 1.35);",
+        "  c *= mix(1.0 - vig, 1.0, v);",
+        "  gl_FragColor = vec4(c, 1.0);",
+        "}"].join("\n")
+    };
+    function build() {
+      var mobile = matchMedia("(pointer: coarse)").matches || Math.min(innerWidth, innerHeight) < 600;
+      var rt = new THREE.WebGLMultisampleRenderTarget(4, 4, { type: THREE.HalfFloatType, format: THREE.RGBAFormat });
+      rt.samples = mobile ? 2 : 4;
+      composer = new THREE.EffectComposer(renderer, rt);
+      composer.addPass(new THREE.RenderPass(scene, cam));
+      bloom = new THREE.UnrealBloomPass(new THREE.Vector2(256, 256), 0.62, 0.5, 1.02); composer.addPass(bloom);
+      grade = new THREE.ShaderPass(GRADE); composer.addPass(grade);
+    }
+    if (ok) { try { build(); } catch (e) { ok = on = false; } }
+    return {
+      ok: function () { return ok; }, on: function () { return on; },
+      set: function (v) { on = ok && v; },
+      size: function (w, h) { if (!composer) return; composer.setPixelRatio(renderer.getPixelRatio()); composer.setSize(w, h); bloom.setSize(w * renderer.getPixelRatio() / 2, h * renderer.getPixelRatio() / 2); grade.uniforms.aspect.value = w / h; },
+      render: function () { if (on && composer) composer.render(); else renderer.render(scene, cam); }
+    };
+  })();
 
   var last = 0;
   function frame(now) {
@@ -419,10 +492,10 @@
     }
     if (!S.playing) prevT = S.t; else if (prevT < -5) prevT = S.t;
     update(S.playing ? dt : 0.016);
-    renderer.render(scene, cam);
+    FX.render();
     requestAnimationFrame(frame);
   }
-  function resize() { var w = canvas.clientWidth, h = canvas.clientHeight; if (!w || !h) return; renderer.setSize(w, h, false); cam.aspect = w / h; cam.fov = w < h ? 82 : 68;
+  function resize() { var w = canvas.clientWidth, h = canvas.clientHeight; if (!w || !h) return; renderer.setSize(w, h, false); FX.size(w, h); cam.aspect = w / h; cam.fov = w < h ? 82 : 68;
     /* lift the optical centre above the control dock so the contact point is not hidden behind it */
     var D = Math.round(Math.min(h * 0.3, 210)); cam.setViewOffset(w, h + D, 0, D, w, h); cam.updateProjectionMatrix(); }
   window.addEventListener("resize", resize);
@@ -447,6 +520,8 @@
     document.addEventListener("pointerdown", function once() { Snd.init(); sndLabel(); document.removeEventListener("pointerdown", once); });
     sndLabel();
     $("#tArrow").addEventListener("change", function (e) { racket.userData.arrow.visible = e.target.checked; });
+    var elFx = $("#tFx"); elFx.checked = FX.on(); elFx.disabled = !FX.ok(); if (!FX.ok()) elFx.parentNode.title = "這個瀏覽器不支援高畫質特效";
+    elFx.addEventListener("change", function (e) { FX.set(e.target.checked); });
     $("#panelToggle").addEventListener("click", function () { document.body.classList.toggle("panel-open"); });
     $("#prev").addEventListener("click", function () { load((S.ci + CH.length - 1) % CH.length, 0); });
     $("#next").addEventListener("click", function () { load((S.ci + 1) % CH.length, 0); });
@@ -528,6 +603,6 @@
   var hot = window.claude && window.claude.hot;
   if (hot && hot.snapshot) hot.snapshot(function () { return { ci: S.ci, vi: S.vi }; });
   function start(d) { resize(); load(Math.min(CH.length - 1, (d && d.ci) || 0), 0); if (d && d.vi && CH[S.ci].v[d.vi]) load(S.ci, d.vi); requestAnimationFrame(frame); }
-  window.__pb = { TL: function () { return TL; }, cam: cam, A: A, S: S, load: load, Snd: Snd };
+  window.__pb = { TL: function () { return TL; }, cam: cam, A: A, FX: FX, S: S, load: load, Snd: Snd };
   if (hot && hot.ready) hot.ready(start); else start((hot && hot.data) || {});
 })();

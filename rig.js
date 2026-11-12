@@ -10,12 +10,14 @@
     function clamp(x, a, b) { return Math.max(a, Math.min(b, x)); }
     function basis(yaw) { return { r: new V3(Math.cos(yaw), 0, -Math.sin(yaw)), f: new V3(-Math.sin(yaw), 0, -Math.cos(yaw)) }; }
     function angDiff(a, b) { var d = (b - a) % (Math.PI * 2); if (d > Math.PI) d -= Math.PI * 2; if (d < -Math.PI) d += Math.PI * 2; return d; }
-    var cloth = new THREE.MeshStandardMaterial({ color: col(o.cloth), roughness: 0.78 });
-    var shade = new THREE.MeshStandardMaterial({ color: col(o.shade), roughness: 0.7 });
-    var accent = new THREE.MeshStandardMaterial({ color: col(o.accent), roughness: 0.55 });
-    var skin = new THREE.MeshStandardMaterial({ color: col(0xf2c9a4), roughness: 0.7 });
-    var dark = new THREE.MeshStandardMaterial({ color: col(0x0a1220), roughness: 0.5 });
-    var white = new THREE.MeshStandardMaterial({ color: col(0xffffff), roughness: 0.35 });
+    /* soft-vinyl toy finish: a satin base with a thin clear coat that catches the floodlights */
+    function vinyl(hex, rough, coat) { return new THREE.MeshPhysicalMaterial({ color: col(hex), roughness: rough, clearcoat: coat, clearcoatRoughness: 0.45, envMapIntensity: 0.8 }); }
+    var cloth = vinyl(o.cloth, 0.62, 0.35);
+    var shade = vinyl(o.shade, 0.6, 0.3);
+    var accent = vinyl(o.accent, 0.42, 0.5);
+    var skin = vinyl(0xf2c9a4, 0.55, 0.25);
+    var dark = vinyl(0x0a1220, 0.3, 0.8);
+    var white = vinyl(0xffffff, 0.25, 0.6);
     var g = new THREE.Group(); scene.add(g);
     var body = new THREE.Group(), upper = new THREE.Group(); g.add(body); g.add(upper);   /* upper = what first person hides */
     var sph = new THREE.SphereGeometry(1, 24, 16);
@@ -27,7 +29,7 @@
     function lathe(pts, sz) { var geo = new THREE.LatheGeometry(pts.map(function (p) { return new THREE.Vector2(p[0], p[1]); }), 24); geo.scale(1, 1, sz); return geo; }
 
     /* round, soft, slightly clueless: big hooded head, bean body, stubby limbs, mitten hands */
-    var blush = new THREE.MeshStandardMaterial({ color: col(0xff9d8a), roughness: 0.9 });
+    var blush = vinyl(0xff9d8a, 0.8, 0);
     var L = {}, R = {};
     [L, R].forEach(function (s) {
       s.thigh = bone(0.092, 0.082, cloth); s.knee = ball(0.083, cloth);

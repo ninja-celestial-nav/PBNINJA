@@ -226,12 +226,19 @@ dt{font-weight:700;color:var(--mute);padding-right:12px;white-space:nowrap}
       <label class="chk"><input type="checkbox" id="tPath" checked>球路軌跡</label>
       <label class="chk"><input type="checkbox" id="tFreeze" checked>擊球瞬間慢放</label>
       <label class="chk"><input type="checkbox" id="tArrow" checked>拍面箭頭</label>
+      <label class="chk"><input type="checkbox" id="tFx" checked>高畫質特效</label>
       <button class="ghost" id="sound" aria-pressed="false">點一下開啟音效</button>
     </div>
   </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
 <script src="scenes.js"></script>
 <script src="rig.js"></script>
 <script src="app.js"></script>
