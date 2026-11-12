@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="NinjaPB 匹克球前五拍黃金決策：每一拍一塊可操作的戰術板與測驗。">
+<title>NinjaPB 前五拍戰術互動指南</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: the whole page is a pickleball court seen from above. Night surround, blue service courts,
+   green kitchen, chalk-white lines, one optic-yellow ball. Each shot = one play on a tactics board. */
+:root{
+  color-scheme:dark;
+  --ink:#071E3D;        /* page: night glass */
+  --panel:#0C2D57;      /* raised panel */
+  --court:#1463B8;      /* playing surface */
+  --court-2:#0F4F96;    /* surface shade */
+  --line:#F3F7FB;       /* chalk lines, main text */
+  --mute:#A9C2DE;       /* secondary text */
+  --ball:#E4F23F;       /* optic yellow: the single accent */
+  --danger:#FF6A4D;     /* semantic: fatal zones, wrong formation */
+  --ice:#8FE3FF;        /* semantic: baseline zone */
+  --go:#4FE39B; --alt:#FFC53D; --kit:#1E9A6C;   /* traffic-light lamps, kitchen surface */
+  --rule:rgba(243,247,251,.16);
+  --display:"Big Shoulders Display","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  --body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--ink);color:var(--line);font-family:var(--body);font-size:16px;line-height:1.75;-webkit-font-smoothing:antialiased}
+h1,h2,h3,p{margin:0}
+h1,h2,h3{text-wrap:balance}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--ball);outline-offset:3px}
+.eyebrow{font-family:var(--display);font-weight:800;letter-spacing:.14em;font-size:14px;color:var(--ball);text-transform:uppercase}
+
+/* ---------- hero ---------- */
+.hero{position:relative;padding:28px clamp(16px,4vw,56px) 44px;border-bottom:2px solid var(--line);overflow:hidden;
+  background:linear-gradient(180deg,var(--court) 0%,var(--court-2) 100%)}
+.brand{display:flex;justify-content:space-between;align-items:baseline;gap:16px;font-family:var(--display);font-weight:900;letter-spacing:.08em;font-size:20px}
+.brand span:last-child{font-weight:600;font-size:14px;letter-spacing:.18em;color:var(--mute);color:rgba(243,247,251,.8)}
+.hero-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:clamp(20px,4vw,56px);align-items:center;margin-top:28px}
+.hero h1{font-weight:900;font-size:clamp(34px,5.4vw,72px);line-height:1.08;letter-spacing:-.01em}
+.hero h1 em{font-style:normal;font-family:var(--display);font-weight:900;font-size:1.5em;letter-spacing:.02em;display:block;line-height:.9;color:var(--ball)}
+.hero .sub{margin-top:16px;font-size:clamp(16px,1.6vw,20px);font-weight:500;max-width:28em}
+.src{list-style:none;padding:0;margin:26px 0 0;display:grid;gap:0;border-top:1px solid rgba(243,247,251,.4);max-width:34em}
+.src li{display:flex;gap:14px;align-items:baseline;padding:9px 0;border-bottom:1px solid rgba(243,247,251,.4);font-size:15px}
+.src b{font-family:var(--display);font-weight:900;font-size:20px;color:var(--ball);min-width:1.6em}
+.hero-court{background:var(--ink);border:2px solid var(--line);padding:10px}
+.hero-court svg{display:block;width:100%;height:auto}
+.hz{cursor:pointer;transition:fill-opacity .25s}
+.hz:hover,.hz:focus{fill-opacity:.42}
+.hero-cap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-family:var(--display);font-weight:800;letter-spacing:.12em;font-size:13px;padding:8px 4px 0;color:var(--mute)}
+#heroNote{color:var(--line);font-family:var(--body);letter-spacing:0;font-weight:500;font-size:14px}
+
+/* ---------- shell ---------- */
+.shell{display:grid;grid-template-columns:220px minmax(0,1fr)}
+.rail{position:sticky;top:0;align-self:start;height:100vh;overflow:auto;border-right:1px solid var(--rule);padding:22px 0}
+.rail a{display:flex;gap:12px;align-items:baseline;padding:7px 20px;color:var(--mute);text-decoration:none;font-size:14px;font-weight:500;border-left:3px solid transparent}
+.rail a b{font-family:var(--display);font-weight:800;font-size:16px;min-width:1.5em}
+.rail a:hover{color:var(--line)}
+.rail a.on{color:var(--line);border-left-color:var(--ball);background:rgba(243,247,251,.06)}
+.rail a.on b{color:var(--ball)}
+main{min-width:0}
+.ch{padding:64px clamp(16px,4vw,56px);border-bottom:1px solid var(--rule);scroll-margin-top:8px}
+.ch-head{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px 22px;align-items:end;margin-bottom:30px}
+.ch-no{font-family:var(--display);font-weight:900;font-size:clamp(64px,8vw,112px);line-height:.8;color:transparent;-webkit-text-stroke:2px var(--line);grid-row:span 2}
+.ch-head h2{font-size:clamp(26px,3.2vw,40px);font-weight:900;line-height:1.2}
+.ch-head .en{font-family:var(--display);font-weight:600;letter-spacing:.12em;font-size:14px;color:var(--mute);text-transform:uppercase}
+.cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(20px,3.5vw,48px);align-items:start}
+.cols.wide-board{grid-template-columns:minmax(0,1fr)}
+.wide-board .copy{max-width:none}
+.wide-board .pts{grid-template-columns:repeat(auto-fit,minmax(300px,1fr));column-gap:40px}
+.wide-board .board svg{max-height:none}
+.copy{display:grid;gap:18px;max-width:34em}
+
+/* principle list: numbered because the deck numbers them or they are sequential */
+.pts{list-style:none;margin:0;padding:0;display:grid;gap:0;border-top:1px solid var(--rule)}
+.pts li{padding:14px 0;border-bottom:1px solid var(--rule);display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 14px}
+.pts .k{font-family:var(--display);font-weight:800;letter-spacing:.1em;font-size:13px;color:var(--ball);grid-column:1/-1;text-transform:uppercase}
+.pts strong{font-weight:700;white-space:nowrap}
+.pts li>strong{grid-column:1}
+.pts li>span{grid-column:2}
+.pts li.full>span{grid-column:1/-1}
+.call{border:2px solid var(--line);padding:16px 18px;background:var(--panel)}
+.call.warn{border-color:var(--danger)}
+.call .eyebrow{display:block;margin-bottom:4px}
+.call.warn .eyebrow{color:var(--danger)}
+.big{font-family:var(--display);font-weight:900;font-size:56px;line-height:1;color:var(--ball)}
+.quote{font-family:var(--display);font-weight:900;font-size:clamp(28px,3.4vw,44px);line-height:1.05;letter-spacing:.01em;text-transform:uppercase}
+
+/* ---------- board ---------- */
+.board{background:var(--panel);border:1px solid var(--rule);padding:14px;display:grid;gap:12px}
+.board svg{display:block;width:100%;height:auto;max-height:560px;user-select:none}
+.board-top{display:flex;gap:10px;justify-content:space-between;align-items:center;flex-wrap:wrap}
+.board-title{font-family:var(--display);font-weight:800;letter-spacing:.12em;font-size:13px;color:var(--mute);text-transform:uppercase}
+.seg{display:inline-flex;flex-wrap:wrap;border:1px solid var(--line)}
+.seg button{background:transparent;border:0;border-right:1px solid var(--line);padding:8px 14px;font-size:14px;font-weight:700;line-height:1.3}
+.seg button:last-child{border-right:0}
+.seg button:hover{background:rgba(243,247,251,.1)}
+.seg button[aria-pressed="true"]{background:var(--line);color:var(--ink)}
+.btn{background:var(--ball);color:var(--ink);border:0;padding:9px 16px;font-weight:900;font-size:14px}
+.btn:hover{filter:brightness(1.08)}
+.btn.ghost{background:transparent;color:var(--line);border:1px solid var(--line)}
+.readout{min-height:4.6em;border-top:1px solid var(--rule);padding-top:12px;font-size:15px}
+.readout b{font-family:var(--display);font-weight:800;letter-spacing:.1em;font-size:14px;color:var(--ball);display:block;text-transform:uppercase}
+.readout.bad b{color:var(--danger)}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.card{border:1px solid var(--rule);padding:16px;background:transparent;text-align:left;display:grid;gap:8px;align-content:start;transition:border-color .2s,background .2s}
+button.card:hover{border-color:var(--line)}
+.card[aria-pressed="true"]{border:2px solid var(--ball);background:rgba(228,242,63,.07)}
+.card h3{font-size:22px;font-weight:900;line-height:1.25}
+.card p{font-size:14.5px;line-height:1.65}
+.card .lab{font-weight:700;color:var(--mute)}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;border:1px solid var(--rule)}
+.stats div{padding:12px;border-right:1px solid var(--rule);font-size:14px;line-height:1.5}
+.stats div:last-child{border-right:0}
+.stats small{display:block;font-family:var(--display);font-weight:800;letter-spacing:.1em;font-size:12px;color:var(--mute);text-transform:uppercase;margin-bottom:4px}
+.stats strong{font-weight:700}
+
+/* svg parts */
+.surf{fill:var(--court)}
+.ln{stroke:var(--line);stroke-width:2;fill:none}
+.net{stroke:var(--line);stroke-width:3;stroke-dasharray:3 3}
+.glass{stroke:var(--ice);stroke-width:5;stroke-linecap:square;opacity:.75;fill:none}
+.mesh{stroke:var(--mute);stroke-width:3;stroke-dasharray:2 3;fill:none}
+.traj{stroke:var(--ball);stroke-width:2.5;fill:none;stroke-dasharray:7 6;stroke-linecap:round}
+.traj.alt{stroke:var(--line);opacity:.55}
+.traj.bad{stroke:var(--danger)}
+.ball{fill:var(--ball);stroke:var(--ink);stroke-width:1.5}
+.t{font-family:var(--display);font-weight:800;letter-spacing:.1em;font-size:11px;fill:var(--mute);text-transform:uppercase}
+.t.w{fill:var(--line)} .t.y{fill:var(--ball)} .t.r{fill:var(--danger)} .t.i{fill:var(--ice)}
+.tc{font-family:var(--body);font-weight:700;font-size:11.5px;fill:var(--line)}
+.tc.y{fill:var(--ball)} .tc.r{fill:var(--danger)} .tc.i{fill:var(--ice)}
+.pl{transition:transform .7s cubic-bezier(.3,.7,.2,1)}
+.pl.nodur{transition:none}
+.pl circle,.pl rect{fill:var(--line)}
+.pl text{font-family:var(--display);font-weight:900;font-size:11px;fill:var(--ink);text-anchor:middle}
+.pl.opp circle,.pl.opp rect{fill:var(--danger)}
+.pl.frozen circle{fill:var(--ice)}
+.pl .tag{fill:var(--line);font-family:var(--body);font-weight:700;font-size:10.5px}
+.zone{fill:var(--line);fill-opacity:.08;stroke:none;cursor:pointer;transition:fill-opacity .25s}
+.zone:hover{fill-opacity:.2}
+.zone.on{fill:var(--ball);fill-opacity:.3}
+.zone.nml.on{fill:var(--danger);fill-opacity:.38}
+.fade{transition:opacity .35s}
+.off{opacity:.12}
+.hide{opacity:0;pointer-events:none}
+#strA{cursor:grab;touch-action:none}
+#strA:active{cursor:grabbing}
+
+/* pyramid */
+.tier{cursor:pointer;fill:var(--court);stroke:var(--line);stroke-width:2;transition:fill .2s}
+.tier:hover{fill:var(--court-2)}
+.tier.on{fill:var(--ball)}
+.tier-t{font-family:var(--body);font-weight:900;font-size:15px;fill:var(--line);text-anchor:middle;pointer-events:none}
+.tier-s{font-family:var(--display);font-weight:800;letter-spacing:.1em;font-size:11px;fill:var(--mute);text-anchor:middle;pointer-events:none}
+.tier.on~text{fill:var(--ink)}
+g.on .tier-t,g.on .tier-s{fill:var(--ink)}
+
+/* quiz */
+.quiz{display:grid;gap:22px;max-width:46em}
+.q{border-top:1px solid var(--rule);padding-top:18px;display:grid;gap:10px}
+.q h3{font-size:18px;font-weight:700;line-height:1.5}
+.q h3 b{font-family:var(--display);font-weight:900;color:var(--ball);margin-right:10px;font-size:20px}
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px}
+.opts button{background:transparent;border:1px solid var(--rule);padding:10px 12px;text-align:left;font-size:15px;font-weight:500}
+.opts button:hover:not(:disabled){border-color:var(--line)}
+.opts button.ok{background:var(--ball);color:var(--ink);border-color:var(--ball);font-weight:900}
+.opts button.no{border-color:var(--danger);color:var(--danger)}
+.opts button:disabled{cursor:default}
+.why{font-size:14.5px;color:var(--mute);min-height:1.75em}
+.score{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;border:2px solid var(--line);padding:16px 18px;background:var(--panel)}
+.score .big{font-variant-numeric:tabular-nums}
+.switch{position:fixed;right:16px;bottom:16px;z-index:30;background:var(--ball);color:var(--ink);font-weight:900;font-size:15px;line-height:1.3;padding:11px 18px;border:2px solid var(--ink);text-decoration:none;box-shadow:0 6px 0 rgba(7,30,61,.55)}
+.switch:hover{filter:brightness(1.08)}
+.switch small{display:block;font-family:var(--display);font-weight:800;letter-spacing:.12em;font-size:11px}
+footer{padding:28px clamp(16px,4vw,56px) 96px;color:var(--mute);font-size:13px}
+
+@media (max-width:980px){
+  .hero-grid,.cols,.cols.wide-board{grid-template-columns:minmax(0,1fr)}
+  .shell{grid-template-columns:minmax(0,1fr)}
+  .rail{position:sticky;top:0;z-index:5;height:auto;display:flex;overflow-x:auto;padding:0;background:var(--ink);border-right:0;border-bottom:1px solid var(--rule)}
+  .rail a{flex:none;padding:10px 12px;border-left:0;border-bottom:3px solid transparent;gap:6px;white-space:nowrap}
+  .rail a.on{border-bottom-color:var(--ball)}
+  .ch{padding:44px 16px;scroll-margin-top:52px}
+}
+@media (max-width:520px){
+  .pair{grid-template-columns:minmax(0,1fr)}
+  .stats{grid-template-columns:minmax(0,1fr)}
+  .stats div{border-right:0;border-bottom:1px solid var(--rule)}
+  .stats div:last-child{border-bottom:0}
+  .pts li{grid-template-columns:minmax(0,1fr)}
+  .pts li>strong,.pts li>span{grid-column:1}
+  .ch-head{grid-template-columns:minmax(0,1fr)}
+  .ch-no{grid-row:auto}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .pl,.fade,.zone,.hz{transition:none}
+}
+
+/* pickleball additions */
+body{overflow-x:hidden}
+.board svg{overflow:visible}
+.kit{fill:var(--kit)}
+.t.g{fill:#BDF5DA}
+.tz{fill:var(--ball);fill-opacity:.3;transition:all .3s}
+.tz.alt{fill:var(--alt);fill-opacity:.34}.tz.stop{fill:var(--danger);fill-opacity:.3}
+.run{stroke:var(--line);stroke-width:2;stroke-dasharray:2 5;fill:none;opacity:.6}
+.board>.seg{justify-self:start}
+.rule3{display:flex;align-items:flex-end;gap:10px;margin-top:6px}
+.rule3 div{display:grid;gap:2px}.rule3 b{font-family:var(--display);font-weight:900;line-height:1;color:var(--ball);font-size:calc(22px + var(--w) * .42)}
+.rule3 span{font-weight:700;font-size:14px}.rule3 i{font-style:normal;color:var(--mute);font-weight:900;padding-bottom:4px}
+.vids{list-style:none;margin:0;padding:0;display:grid;gap:8px;font-size:14px;line-height:1.6;color:var(--mute)}
+.vids::before{content:"權威影音";font-family:var(--display);font-weight:800;letter-spacing:.14em;font-size:13px;color:var(--ball)}
+.vids b{display:block;color:var(--line)}
+.readout.light{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:start;--lamp:var(--go);min-height:6.5em}
+.readout.light[data-light="alt"]{--lamp:var(--alt)}.readout.light[data-light="stop"]{--lamp:var(--danger)}
+.readout.light b{color:var(--lamp)}
+.readout.light p{font-size:14.5px;line-height:1.65}
+.lamps{display:grid;gap:4px;padding:6px;background:#04122a;border-radius:10px}
+.lamps i{width:14px;height:14px;border-radius:50%;background:rgba(243,247,251,.14)}
+[data-light="go"] .lamps i:nth-child(3){background:var(--go);box-shadow:0 0 9px var(--go)}
+[data-light="alt"] .lamps i:nth-child(2){background:var(--alt);box-shadow:0 0 9px var(--alt)}
+[data-light="stop"] .lamps i:nth-child(1){background:var(--danger);box-shadow:0 0 9px var(--danger)}
+.links{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px}
+.links a{border:1px solid var(--line);padding:10px 12px;color:var(--line);text-decoration:none;display:grid;gap:1px}
+.links a:hover{background:rgba(243,247,251,.1)}
+.links a span{font-size:12px;color:var(--mute)}.links a b{font-size:14px;overflow-wrap:anywhere}
+.score .big{font-size:40px;letter-spacing:.1em}
+</style>
+</head>
+<body>
+<a class="switch" href="/"><small>SWITCH VIEW</small>切換到 3D 第一人稱球場 →</a>
+
+<header class="hero">
+  <div class="brand"><span>NINJAPB</span><span>MASTERCLASS ｜ TACTICAL ROADMAP 2026</span></div>
+  <div class="hero-grid">
+    <div>
+      <h1><em>FIVE SHOTS</em>匹克球前五拍黃金決策</h1>
+      <p class="sub">第 1 拍發球到第 5 拍重置／長丁克。精解力學、決策紅綠燈，每一拍都有一塊可以操作的戰術板。</p>
+      <ul class="src">
+        <li><b>1</b><span>第 1 拍　發球</span></li>
+        <li><b>2</b><span>第 2 拍　接發球</span></li>
+        <li><b>3</b><span>第 3 拍　抽球 vs. 吊球</span></li>
+        <li><b>4</b><span>第 4 拍　Punch / Roll / Flick</span></li>
+        <li><b>5</b><span>第 5 拍　Reset vs. 長丁克</span></li>
+      </ul>
+    </div>
+    <div class="hero-court">
+      <svg viewBox="0 0 720 380" role="img" aria-label="匹克球場俯視圖，標示廚房、過渡區與底線">
+        <rect x="58" y="54" width="604" height="274" class="surf"/>
+        <rect class="hz" data-n="BASELINE：發球與接發球都從這裡開始。發完球在底線後煞停，守雙彈跳原則。" tabindex="0" x="58" y="54" width="77" height="274" fill="#8FE3FF" fill-opacity=".22"/>
+        <rect class="hz" data-n="BASELINE：發球與接發球都從這裡開始。發完球在底線後煞停，守雙彈跳原則。" tabindex="0" x="585" y="54" width="77" height="274" fill="#8FE3FF" fill-opacity=".22"/>
+        <rect class="hz" data-n="TRANSITION：過渡區（無人區）。球被壓到腳邊時，軟手 Reset 卸力進廚房。" tabindex="0" x="135" y="54" width="129" height="274" fill="#FF6A4D" fill-opacity=".2"/>
+        <rect class="hz" data-n="TRANSITION：過渡區（無人區）。球被壓到腳邊時，軟手 Reset 卸力進廚房。" tabindex="0" x="456" y="54" width="129" height="274" fill="#FF6A4D" fill-opacity=".2"/>
+        <rect class="hz" data-n="KITCHEN：廚房（NVZ）。站穩廚房線，才有長丁克、Punch、Roll、Flick 的主動權。" tabindex="0" x="264" y="54" width="192" height="274" fill="#4FE39B" fill-opacity=".45"/>
+        <rect x="58" y="54" width="604" height="274" class="ln"/>
+        <line x1="264" y1="54" x2="264" y2="328" class="ln"/><line x1="456" y1="54" x2="456" y2="328" class="ln"/>
+        <line x1="58" y1="191" x2="264" y2="191" class="ln"/><line x1="456" y1="191" x2="662" y2="191" class="ln"/>
+        <line x1="360" y1="40" x2="360" y2="342" class="net"/>
+        <text x="96" y="42" class="t i" text-anchor="middle">BASELINE</text><text x="624" y="42" class="t i" text-anchor="middle">BASELINE</text>
+        <text x="200" y="42" class="t r" text-anchor="middle">TRANSITION</text><text x="520" y="42" class="t r" text-anchor="middle">TRANSITION</text>
+        <text x="360" y="30" class="t g" text-anchor="middle">KITCHEN · NVZ</text>
+        <path id="heroPath" class="traj" d="M70 250 L600 120 L130 250 L420 150 L300 240 L440 110 Z" opacity=".5"/>
+        <circle id="heroBall" class="ball" r="8" cx="70" cy="250"/>
+        <text x="360" y="366" class="t" text-anchor="middle">44 FT × 20 FT ｜ 13.41 M × 6.10 M</text>
+      </svg>
+      <div class="hero-cap"><span>COURT ZONES / 球場三區</span><span id="heroNote">點選球場色塊，看那一區的任務。</span></div>
+    </div>
+  </div>
+</header>
+
+<div class="shell">
+<nav class="rail" aria-label="章節">
+  <a href="#framework"><b>01</b>五拍架構</a>
+  <a href="#serve"><b>02</b>第 1 拍 發球</a>
+  <a href="#return"><b>03</b>第 2 拍 接發球</a>
+  <a href="#third"><b>04</b>第 3 拍 抽 vs. 吊</a>
+  <a href="#fourth"><b>05</b>第 4 拍 截擊分流</a>
+  <a href="#fifth"><b>06</b>第 5 拍 Reset vs. 長丁克</a>
+  <a href="#quiz"><b>07</b>決策測驗</a>
+  <a href="#coach"><b>08</b>課程與裝備</a>
+</nav>
+
+<main>
+
+<section class="ch" id="framework">
+  <div class="ch-head"><div class="ch-no">01</div><div class="en">Five-Shot Tactical Framework</div><h2>核心五拍架構</h2></div>
+  <div class="cols">
+    <div class="copy">
+      <ul class="pts">
+        <li class="full"><span class="k">1 &amp; 2 / 發球 &amp; 接發球</span><span>深發球壓底線鎖角度；高深接發換 2 秒 100% 上廚房。</span></li>
+        <li class="full"><span class="k">3 / 抽球 Drive vs. 吊球 Drop</span><span>淺高球果斷抽球（Drive）逼冒高；深低球軟吊（Drop）穩推進。</span></li>
+        <li class="full"><span class="k">4 / Punch · Roll · Flick</span><span>高球刺拳推深、網高滾截壓腳尖、浮球手腕快挑突擊。</span></li>
+        <li class="full"><span class="k">5 / Reset 重置 vs. 長丁克</span><span>過渡區軟手卸力進廚房；站穩廚房推對角長丁克造殺機。</span></li>
+      </ul>
+      <div class="call"><span class="eyebrow">誰打哪一拍</span><p>下方是發球方（白色）。第 1、3、5 拍由發球方出手，第 2、4 拍由接球方（紅色）出手。</p></div>
+    </div>
+    <div class="board">
+      <div class="board-top"><span class="board-title">全場俯視 · 一分球的前五拍</span><button class="btn" id="fwPlay">播放全程</button></div>
+      <div class="seg" id="fwSeg"><button data-v="1" aria-pressed="false">1 發球</button><button data-v="2" aria-pressed="false">2 接發</button><button data-v="3" aria-pressed="false">3 吊球</button><button data-v="4" aria-pressed="false">4 回丁克</button><button data-v="5" aria-pressed="false">5 長丁克</button></div>
+      <svg id="fwSvg" viewBox="0 0 260 470" role="img" aria-label="前五拍的球路與四名球員的跑位"></svg>
+      <div class="readout" id="fwOut" aria-live="polite"></div>
+    </div>
+  </div>
+</section>
+
+<section class="ch" id="serve">
+  <div class="ch-head"><div class="ch-no">02</div><div class="en">Shot 1 · The Serve</div><h2>第 1 拍 發球：深壓底線，鎖死對手進攻</h2></div>
+  <div class="cols">
+    <div class="copy">
+      <div class="call"><span class="eyebrow">黃金法則</span>
+        <div class="rule3"><div style="--w:80%"><b>80%</b><span>深度</span></div><i>＞</i><div style="--w:15%"><b>15%</b><span>旋轉</span></div><i>＞</i><div style="--w:5%"><b>5%</b><span>速度</span></div></div></div>
+      <ul class="pts">
+        <li class="full"><span class="k">精解力學 1</span><span><strong>合法三要素</strong>　肚臍以下觸球、拍頭低於手腕、由下往上揮拍。</span></li>
+        <li class="full"><span class="k">精解力學 2</span><span><strong>轉髖刷上旋</strong>　拋球前伸 1 呎，下肢轉髖帶動肩膀，拍面微閉 10°–15° 刷上旋。</span></li>
+        <li class="full"><span class="k">精解力學 3</span><span><strong>底線煞停</strong>　發球後立即在底線後 Split-Step 煞停（守雙彈跳原則，禁衝場內）。</span></li>
+      </ul>
+      <ul class="vids"><li><b>Briones Pickleball</b>現代重上旋深發球力學：下肢轉髖發力與底線深區壓迫軌跡</li><li><b>John Cincola</b>五步驟機械化穩定發球：消除手腕翻甩、100% 合法穩定動力鏈</li></ul>
+    </div>
+    <div class="board">
+      <div class="board-top"><span class="board-title">決策紅綠燈 · 選落點</span>
+        <div class="seg" id="svSeg"><button data-v="deep" aria-pressed="true">GO 打深球</button><button data-v="bh" aria-pressed="false">ALT 壓反手</button><button data-v="wide" aria-pressed="false">ALT 切外角</button></div></div>
+      <svg id="svSvg" viewBox="0 0 260 470" role="img" aria-label="三種發球落點"></svg>
+      <div class="readout light" id="svOut" aria-live="polite"></div>
+    </div>
+  </div>
+</section>
+
+<section class="ch" id="return">
+  <div class="ch-head"><div class="ch-no">03</div><div class="en">Shot 2 · Return of Serve</div><h2>第 2 拍 接發球：高深弧線換時間，100% 搶佔廚房線</h2></div>
+  <div class="cols">
+    <div class="copy">
+      <div class="call"><span class="eyebrow">戰略定位</span><p>唯一目標：安全護送自己與搭檔 100% 站穩廚房線（絕非拼一拍得分）。</p></div>
+      <ul class="pts">
+        <li class="full"><span class="k">精解力學 1</span><span><strong>0.2 秒預判墊步 (Split-Step)</strong>　在對手觸球前 0.2 秒完成 Split-Step 雙腳墊步，徹底消除啟動延遲。</span></li>
+        <li class="full"><span class="k">精解力學 2</span><span><strong>鎖腕平穩推擊 (Locked Wrist Push)</strong>　拍面微開（5°–10°）、固定手腕，以肩膀推高過網 3 呎以上之安全防護弧度。</span></li>
+        <li class="full"><span class="k">精解力學 3</span><span><strong>隨球衝刺煞停 (Return &amp; Rush)</strong>　擊球後立即前衝，在對手打第 3 拍前於廚房線前 0.5 步雙腳踩煞停步。</span></li>
+      </ul>
+      <div class="stats"><div><small>滯空時間</small><strong>1.5–2.0 秒</strong></div><div><small>過網高度</small><strong>3 呎以上</strong></div><div><small>煞停位置</small><strong>廚房線前 0.5 步</strong></div></div>
+      <ul class="vids"><li><b>ThatPickleballGuy</b>高深接發球換取 2 秒上網策略：避免短球被抓腳底</li><li><b>PlayPickleball</b>完美接發球站位與隨球搶網步伐</li></ul>
+    </div>
+    <div class="board">
+      <div class="board-top"><span class="board-title">決策紅綠燈 · 你是接球方（下方）</span></div>
+      <div class="seg" id="rtSeg"><button data-v="deep" aria-pressed="true">GO 高且深</button><button data-v="mid" aria-pressed="false">ALT 打中路</button><button data-v="bh" aria-pressed="false">ALT 反手深角</button><button data-v="flat" aria-pressed="false">✕ 平快短球</button></div>
+      <svg id="rtSvg" viewBox="0 0 260 470" role="img" aria-label="接發球的落點選擇與上網跑位"></svg>
+      <div class="readout light" id="rtOut" aria-live="polite"></div>
+    </div>
+  </div>
+</section>
+
+<section class="ch" id="third">
+  <div class="ch-head"><div class="ch-no">04</div><div class="en">Shot 3 · Drive vs. Drop</div><h2>第 3 拍 抽球 vs. 吊球</h2></div>
+  <div class="cols wide-board">
+    <div class="copy">
+      <div class="call"><span class="eyebrow">戰略核心</span><p>抽球不是賭一拍得分，而是「逼對手冒高、為第 5 拍鋪路的過渡武器！」</p></div>
+      <ul class="pts">
+        <li><strong>沉拍頭刷上旋</strong><span>短引拍、拍頭低於手腕 4 吋，轉髖由低向高刷出強烈上旋。</span></li>
+        <li><strong>貼網急沉軌跡</strong><span>過網高度控制在 1 呎內，靠上旋急墜至對手膝蓋以下。</span></li>
+        <li><strong>抽球後前壓</strong><span>收拍短促，擊球後立即前壓至中場過渡區踩煞，銜接第 5 拍。</span></li>
+      </ul>
+      <ul class="vids"><li><b>Briones Pickleball</b>現代低平急沉上旋抽球力學</li><li><b>James Ignatowich</b>第 3 拍抽球 vs. 吊球實戰決策</li></ul>
+    </div>
+    <div class="board">
+      <div class="board-top"><span class="board-title">側視 · 決策紅綠燈</span>
+        <div class="seg" id="thSeg"><button data-v="drive" aria-pressed="true">GO 抽球 Drive</button><button data-v="drop" aria-pressed="false">STOP 改吊球 Drop</button><button data-v="net" aria-pressed="false">✕ 失衡硬抽</button></div>
+        <button class="btn ghost" id="thPlay">重播球路</button></div>
+      <svg id="thSvg" viewBox="0 70 600 182" role="img" aria-label="第 3 拍側視圖：抽球貼網急沉，吊球頂點在己方半場"></svg>
+      <div class="readout light" id="thOut" aria-live="polite"></div>
+    </div>
+  </div>
+</section>
+
+<section class="ch" id="fourth">
+  <div class="ch-head"><div class="ch-no">05</div><div class="en">Shot 4 · Punch / Roll / Flick</div><h2>第 4 拍 網前截擊分流：守住廚房，封鎖推進</h2></div>
+  <div class="cols wide-board">
+    <div class="pair" id="foCards" style="grid-template-columns:repeat(auto-fit,minmax(230px,1fr))">
+      <button class="card" data-v="punch" aria-pressed="true"><span class="eyebrow">Punch Volley</span><h3>拳擊推截擊</h3>
+        <p><span class="lab">動作要領</span>　拍置胸前 10–11 點鐘不拉拍，鎖死手腕向前短促刺拳頂出 6 吋。</p>
+        <p><span class="lab">執行時機</span>　來球高於網帶，或迎擊對手第 3 拍強抽（Drive）。</p>
+        <p><span class="lab">戰術原因</span>　反應時間僅 0.3 秒，短刺拳最穩，直接借力把球深壓回對手底線／腳邊。</p></button>
+      <button class="card" data-v="roll" aria-pressed="false"><span class="eyebrow">Roll Volley</span><h3>上旋滾截擊</h3>
+        <p><span class="lab">動作要領</span>　拍面微扣 10°–15°、手肘在身前，前臂內旋（Pronation）由下往上滾刷。</p>
+        <p><span class="lab">執行時機</span>　對手第 3 拍 Drop 略高，正處於網帶高度或下墜中需空中攔截時。</p>
+        <p><span class="lab">戰術原因</span>　高度不足以平推，靠上旋越網急沉壓在過渡區對手腳尖，逼其抬高下一拍。</p></button>
+      <button class="card" data-v="flick" aria-pressed="false"><span class="eyebrow">Flick</span><h3>手腕快挑突擊</h3>
+        <p><span class="lab">動作要領</span>　維持常規 Dink 隱蔽姿勢，觸球瞬間手指抓緊握把（Finger Squeeze）微甩手腕。</p>
+        <p><span class="lab">執行時機</span>　廚房區來球略微浮高、對手重心偏離或未防備時。</p>
+        <p><span class="lab">戰術原因</span>　極高隱蔽性與短槓桿爆發球速，精準突襲對手執拍肩腋下（Chicken Wing）。</p></button>
+    </div>
+    <div class="board">
+      <div class="board-top"><span class="board-title">側視 · 依來球高度分流（你在左側廚房線）</span><button class="btn ghost" id="foPlay">重播球路</button></div>
+      <svg id="foSvg" viewBox="0 70 600 182" role="img" aria-label="第 4 拍側視圖：三種截擊對應三種來球高度"></svg>
+      <div class="readout" id="foOut" aria-live="polite"></div>
+    </div>
+    <div class="call warn" style="max-width:34em"><span class="eyebrow">紅燈</span><p>低於網帶過多：紅燈禁挑。</p></div>
+    <ul class="vids"><li><b>Selkirk TV</b>Punch vs. Roll Volley 高度判斷與分流</li><li><b>Zane Navratil</b>網前 Roll、Poke 與 Flick 完整拆解</li></ul>
+  </div>
+</section>
+
+<section class="ch" id="fifth">
+  <div class="ch-head"><div class="ch-no">06</div><div class="en">Shot 5 · Reset or Aggressive Dink</div><h2>第 5 拍 軟手重置 vs. 長丁克：化被動為主動，奪取網前控制權</h2></div>
+  <div class="cols">
+    <div class="copy">
+      <div class="pair" id="fiCards">
+        <button class="card" data-v="reset" aria-pressed="true"><span class="eyebrow">受壓防守</span><h3>Reset<br>過渡區軟手重置</h3>
+          <p><span class="lab">精解動作</span>　雙腳「Split &amp; Freeze」煞停凍結，握力降至 2–3/10（海綿手感），拍面微開 45° 不揮拍，靠手肘避震把球輕卸入廚房。</p>
+          <p><span class="lab">選擇時機</span>　人還卡在中場過渡區（無人區），且對手第 4 拍強勢截擊下壓至腳邊時。</p></button>
+        <button class="card" data-v="dink" aria-pressed="false"><span class="eyebrow">網前壓迫</span><h3>長丁克<br>Aggressive Dink</h3>
+          <p><span class="lab">精解動作</span>　膝蓋彎曲使重心低於網高，手腕鎖死、以肩膀為大擺鐘將球平推向對角線大角度或對手腳邊（拋物線頂點務必在己方半場）。</p>
+          <p><span class="lab">選擇時機</span>　已順利推進站穩廚房線，或對手第 4 拍回球偏淺／偏高浮起時。</p></button>
+      </div>
+      <ul class="vids"><li><b>Tanner Pickleball</b>過渡區 Split &amp; Freeze 軟手重置秘訣</li><li><b>Tanner Pickleball</b>2026 必備四大丁克球與長丁克壓迫</li></ul>
+    </div>
+    <div class="board">
+      <div class="board-top"><span class="board-title">全場俯視 · 點左側卡片切換</span><button class="btn ghost" id="fiPlay">重播球路</button></div>
+      <svg id="fiSvg" viewBox="0 0 260 470" role="img" aria-label="Reset 與長丁克的球路比較"></svg>
+      <div class="readout" id="fiOut" aria-live="polite"></div>
+    </div>
+  </div>
+</section>
+
+<section class="ch" id="quiz">
+  <div class="ch-head"><div class="ch-no">07</div><div class="en">Self Check</div><h2>決策測驗：六題驗收</h2></div>
+  <div class="quiz" id="quizBox"></div>
+</section>
+
+<section class="ch" id="coach">
+  <div class="ch-head"><div class="ch-no">08</div><div class="en">Coach Ninja · Six Zero Official Gear Partner</div><h2>Coach Ninja 專業教學課程與裝備</h2></div>
+  <div class="cols">
+    <div class="copy">
+      <div class="call"><span class="eyebrow">認證教學體系 &amp; 高速攝影逐格診斷</span><p>助學員突破 <span class="big">DUPR 3.0 → 4.0</span></p><p>RPO / PPR 國際職業教練認證。高速慢動作攝影逐格技術診斷，專治手腕代償翻腕與過渡區失誤。</p></div>
+      <ul class="pts">
+        <li class="full"><span class="k">01 ｜ 雙北 · 天母 · 北投 · 內湖 彈性開班</span><span><strong>1-on-1 / 1-on-2 個人技術精修班</strong>　慢動作逐格拆解第 1–5 拍動力鏈，矯正手腕代償翻腕，打造穩健個人化動作模型。</span></li>
+        <li class="full"><span class="k">02</span><span><strong>雙打搭檔實戰戰術特訓營</strong>　聚焦雙人連動走位、中路責任區劃分與「Drive &amp; Crash」搶網撲殺戰術。</span></li>
+        <li class="full"><span class="k">03</span><span><strong>DUPR 分級進階班 &amp; 新手體驗班（3–4 人精緻小班）</strong>　從擊球決策紅綠燈到高強度情境對抗，深度內化實戰肌肉記憶。</span></li>
+      </ul>
+      <div class="call"><span class="eyebrow">學員專屬福利</span><p>上課期間提供 Six Zero 全系列旗艦球拍免費試打體驗，並加贈專業球拍鉛片配重客製化調整指導。</p></div>
+    </div>
+    <div class="copy">
+      <p>Six Zero 澳洲頂級球拍：出色停球滯空感（Dwell Time）與減震大甜區，大幅提升第 3 拍 Drop 與第 5 拍 Reset 成功率。</p>
+      <ul class="pts">
+        <li class="full"><span class="k">日本 Toray 生碳纖維 ｜ 強化：第 5 拍 Reset</span><span><strong>Double Black Diamond (DBD)</strong>　極致手感回饋與軟手 Reset 首選，全能型選手的頂級標竿戰拍。</span></li>
+        <li class="full"><span class="k">100% 杜邦 Kevlar 芳綸纖維面板 ｜ 強化：第 3 拍 Drive · 第 4 拍 Roll</span><span><strong>Ruby Pro</strong>　提供極限咬球旋轉與超高耐磨度，是第 3 拍抽球與上旋滾截擊的進攻神器。</span></li>
+        <li class="full"><span class="k">熱壓一體成型製程 ｜ 強化：第 4 拍 網前反擊</span><span><strong>Coral Pro / Infinity 系列</strong>　結合周邊高密度減震發泡，全面擴大防守容錯甜區並賦予網前反擊爆炸力。</span></li>
+      </ul>
+      <div class="score"><span class="big">NINJA</span><span>結帳輸入專屬折扣碼，即享全品項 9 折。官方授權認證合作夥伴 · 正品保障 · 享原廠完整保固。</span></div>
+      <div class="links"><a href="https://ninjapb.vercel.app" target="_blank" rel="noopener"><span>預約課程</span><b>ninjapb.vercel.app</b></a><a href="https://www.instagram.com/ninjapbtw" target="_blank" rel="noopener"><span>官方 IG</span><b>@ninjapbtw</b></a><a href="https://sixzeropickleball.com" target="_blank" rel="noopener"><span>Six Zero 官方商城</span><b>sixzeropickleball.com</b></a></div>
+    </div>
+  </div>
+</section>
+
+<footer>內容整理自簡報《NinjaPB 匹克球前五拍黃金決策》，Coach Ninja (@ninjapbtw) 監製，嚴格遵循雙彈跳與 NVZ 規則。戰術板為示意圖，比例依 44 呎 × 20 呎球場繪製；球路弧度為教學示意。</footer>
+</main>
+</div>
+
+<script>
+(function(){
+"use strict";
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const wait=ms=>new Promise(r=>setTimeout(r,reduce?0:ms));
+let seq=0;
+/* move a ball along a path; resolves false if a newer flight took over */
+function fly(ball,path,dur){
+  const my=ball._id=++seq, L=path.getTotalLength();
+  ball.classList.remove('hide');
+  return new Promise(res=>{
+    const put=k=>{const p=path.getPointAtLength(L*k);ball.setAttribute('cx',p.x);ball.setAttribute('cy',p.y);};
+    if(reduce){put(1);return res(true);}
+    let t0;
+    (function f(t){
+      if(ball._id!==my) return res(false);
+      if(t0===undefined) t0=t||performance.now();
+      const k=Math.min(1,((t||t0)-t0)/dur); put(k);
+      k<1?requestAnimationFrame(f):res(true);
+    })();
+  });
+}
+function park(ball,path,k){ball._id=++seq;ball.classList.remove('hide');const p=path.getPointAtLength(path.getTotalLength()*(k||0));ball.setAttribute('cx',p.x);ball.setAttribute('cy',p.y);}
+function seg(el,cb){el.addEventListener('click',e=>{const b=e.target.closest('button');if(!b||!el.contains(b))return;pick(el,b.dataset.v);cb(b.dataset.v,true);});}
+function pick(el,v){$$('button',el).forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.v===String(v))));}
+const mv=(el,x,y)=>{el.style.transform='translate('+x+'px,'+y+'px)';};
+const out=(el,head,body,bad)=>{el.classList.toggle('bad',!!bad);el.innerHTML='<b>'+head+'</b>'+body;};
+/* decision traffic light readout */
+const lamp=(el,kind,title,when,why)=>{el.dataset.light=kind;el.classList.toggle('bad',kind==='stop');
+  el.innerHTML='<span class="lamps" aria-hidden="true"><i></i><i></i><i></i></span><div><b>'+({go:'GO',alt:'ALT',stop:'STOP'})[kind]+' ｜ '+title+'</b><p><strong>時機</strong>　'+when+'</p><p><strong>原因</strong>　'+why+'</p></div>';};
+
+/* ---- court templates. Metres: x across, z along, net at z=0, "you" on z>0 (bottom / left). ---- */
+const X=x=>130+30*x, Y=z=>235+30*z, pt=(x,z)=>X(x).toFixed(1)+' '+Y(z).toFixed(1);
+const line=(a,b)=>'M'+pt(a[0],a[1])+' L'+pt(b[0],b[1]);
+const HW=3.048, BL=6.706, KL=2.134;
+const P=(id,label,cls,tag)=>'<g id="'+id+'" class="pl '+(cls||'')+'"><circle r="11"/><text y="4">'+label+'</text>'+(tag?'<text class="tag" y="-15" text-anchor="middle">'+tag+'</text>':'')+'</g>';
+const at=(el,x,z)=>mv(el,X(x),Y(z));
+const full=inner=>'<rect x="'+X(-HW)+'" y="'+Y(-BL)+'" width="'+(60*HW)+'" height="'+(60*BL)+'" class="surf"/><rect x="'+X(-HW)+'" y="'+Y(-KL)+'" width="'+(60*HW)+'" height="'+(60*KL)+'" class="kit"/>'+(inner.under||'')+
+  '<rect x="'+X(-HW)+'" y="'+Y(-BL)+'" width="'+(60*HW)+'" height="'+(60*BL)+'" class="ln"/>'+
+  [-1,1].map(s=>'<line x1="'+X(-HW)+'" y1="'+Y(s*KL)+'" x2="'+X(HW)+'" y2="'+Y(s*KL)+'" class="ln"/><line x1="130" y1="'+Y(s*KL)+'" x2="130" y2="'+Y(s*BL)+'" class="ln"/>').join('')+
+  '<line x1="'+X(-3.35)+'" y1="235" x2="'+X(3.35)+'" y2="235" class="net"/><text x="250" y="238" class="t w" transform="rotate(90 250 238)" text-anchor="middle">NET</text>'+
+  '<text x="'+X(HW)+'" y="'+(Y(-KL)+13)+'" class="t g" dx="-4" text-anchor="end">KITCHEN</text>'+(inner.over||'');
+/* side view: 35 px per metre, ground y=220, net 0.9 m at x=300, you on the left */
+const SX=z=>300-35*z, SY=h=>220-35*h;
+const SP=(id,label,cls)=>'<g id="'+id+'" class="pl '+(cls||'')+'"><circle cy="-44" r="8"/><rect x="-6" y="-35" width="12" height="35" rx="6"/><text class="tag" y="-58" text-anchor="middle">'+label+'</text></g>';
+const side=inner=>'<rect x="'+SX(BL)+'" y="220" width="'+(70*BL)+'" height="7" class="surf"/><rect x="'+SX(KL)+'" y="220" width="'+(70*KL)+'" height="7" class="kit"/>'+
+  '<line x1="300" y1="'+SY(0.9)+'" x2="300" y2="220" class="net"/><line x1="292" y1="'+SY(0.9)+'" x2="308" y2="'+SY(0.9)+'" stroke="#F3F7FB" stroke-width="3"/>'+
+  '<text x="300" y="'+(SY(0.9)-9)+'" class="t w" text-anchor="middle">NET 34–36 吋</text><text x="300" y="243" class="t g" text-anchor="middle">KITCHEN 廚房</text>'+
+  '<text x="'+SX(4.4)+'" y="243" class="t r" text-anchor="middle">過渡區</text><text x="'+SX(-4.4)+'" y="243" class="t r" text-anchor="middle">過渡區</text><text x="'+SX(BL)+'" y="243" class="t i" text-anchor="middle">底線</text><text x="'+SX(-BL)+'" y="243" class="t i" text-anchor="middle">底線</text>'+inner;
+const arc=(a,b,c)=>'M'+SX(a[0]).toFixed(1)+' '+SY(a[1]).toFixed(1)+' Q'+SX(c[0]).toFixed(1)+' '+SY(c[1]).toFixed(1)+' '+SX(b[0]).toFixed(1)+' '+SY(b[1]).toFixed(1);
+
+/* ---- hero ---- */
+(function(){
+  const path=$('#heroPath'), ball=$('#heroBall'), note=$('#heroNote'), L=path.getTotalLength();
+  $$('.hz').forEach(z=>{const say=()=>note.textContent=z.dataset.n;z.addEventListener('click',say);z.addEventListener('focus',say);z.addEventListener('mouseenter',say);});
+  if(reduce) return;
+  let t0;
+  (function f(t){ if(t0===undefined)t0=t||0; const p=path.getPointAtLength(L*((((t||0)-t0)/11000)%1)); ball.setAttribute('cx',p.x);ball.setAttribute('cy',p.y); requestAnimationFrame(f); })();
+})();
+
+/* ---- 01 framework: five shots ---- */
+(function(){
+  const svg=$('#fwSvg');
+  const S=[null,
+    {p:line([1.25,6.95],[-1.6,-6.0]),d:1050,h:'第 1 拍 ｜ 發球',t:'深發球壓底線鎖角度。落在底線前 2–3 呎，把接球者釘在後場。'},
+    {p:line([-1.75,-7.3],[1.2,5.9]),d:1500,h:'第 2 拍 ｜ 接發球（接球方）',t:'高深接發換 2 秒，接完立刻衝向廚房線，100% 上廚房。'},
+    {p:line([1.3,7.0],[-1.2,-1.3]),d:1300,h:'第 3 拍 ｜ 抽球 vs. 吊球',t:'淺高球果斷抽球（Drive）逼冒高；這顆是深低球，所以軟吊（Drop）穩推進，兩人一起上網。'},
+    {p:line([-1.3,-2.0],[0.9,1.3]),d:900,h:'第 4 拍 ｜ Punch / Roll / Flick（接球方）',t:'高球刺拳推深、網高滾截壓腳尖、浮球手腕快挑突擊。這顆吊球落進廚房，對手只能回丁克。'},
+    {p:line([1.25,1.9],[-2.4,-1.7]),d:900,h:'第 5 拍 ｜ Reset vs. 長丁克',t:'過渡區軟手卸力進廚房；這裡已站穩廚房線，推對角長丁克造殺機。'}];
+  svg.innerHTML=full({over:S.slice(1).map((s,i)=>'<path id="fwP'+(i+1)+'" class="traj fade off'+(i%2?' alt':'')+'" d="'+s.p+'"/>').join('')+
+    P('fwO1','','opp','接球者')+P('fwO2','','opp')+P('fwB','P')+P('fwA','YOU')+'<circle id="fwBall" class="ball hide" r="6"/>'});
+  const A=$('#fwA'),B=$('#fwB'),O1=$('#fwO1'),O2=$('#fwO2'),ball=$('#fwBall'),o=$('#fwOut'),sg=$('#fwSeg');
+  function pose(n){
+    at(A, n>=3?1.0:0.75, n>=3?2.65:7.3); at(B, n>=3?-1.3:-1.6, n>=3?2.6:7.2);
+    at(O1, n>=5?-1.9:n>=2?-1.0:-1.4, n>=2?-2.6:-7.3); at(O2,1.5,-2.6);
+    S.slice(1).forEach((s,i)=>$('#fwP'+(i+1)).classList.toggle('off',i+1!==n));
+    pick(sg,n); if(n) out(o,S[n].h,S[n].t); else out(o,'一分球的前五拍','按「播放全程」，或逐拍點選上方按鈕。');
+  }
+  let run=0;
+  async function step(n,anim){const my=++run;pose(n);const p=$('#fwP'+n);if(anim){await fly(ball,p,S[n].d);}else park(ball,p,1);return my===run;}
+  seg(sg,v=>step(+v,true));
+  $('#fwPlay').addEventListener('click',async()=>{const my=++run;for(let n=1;n<=5;n++){pose(n);if(!await fly(ball,$('#fwP'+n),S[n].d)||my!==run-0&&my!==run)return;await wait(650);if(my!==run)return;}});
+  pose(0);
+})();
+
+/* ---- 02 serve ---- */
+(function(){
+  const svg=$('#svSvg');
+  const D={deep:{to:[-1.6,-6.0],o:[-1.4,-7.4],z:[-HW,0,-6.1,-5.8],zl:'底線前 2–3 呎',k:'go',h:'常規首選｜打深球（底線前 2–3 呎）',w:'所有常規發球回合。',y:'把對手釘在底線深處，拉長其上網距離並削弱第 2 拍回球威脅。',r:[-1.6,-7.4]},
+           bh:{to:[-0.45,-5.9],o:[-1.9,-7.4],z:[-1.0,0,-BL,-5.0],zl:'反手側',k:'alt',h:'戰術變奏｜壓反手',w:'對手反手較弱時。',y:'逼對手移動中用弱側擊球，直接製造第 3 拍肉包高球。',r:[-0.7,-7.2]},
+           wide:{to:[-2.7,-4.5],o:[-0.9,-7.4],z:[-HW,-2.2,-5.6,-3.4],zl:'外角',k:'alt',h:'戰術變奏｜切外角',w:'對手站位偏中線時。',y:'逼對手移動中用弱側擊球、把人拉出場外，直接製造第 3 拍肉包高球。',r:[-2.9,-6.3]}};
+  svg.innerHTML=full({under:'<rect id="svZ" class="tz"/>',over:'<path id="svP" class="traj"/><text id="svZT" class="tc y" text-anchor="middle"></text>'+
+    P('svO1','','opp','接球者')+P('svO2','','opp')+P('svB','P')+P('svA','YOU')+'<circle id="svBall" class="ball" r="6"/>'});
+  const O1=$('#svO1'),ball=$('#svBall'),p=$('#svP'),z=$('#svZ'),zt=$('#svZT'),o=$('#svOut');
+  at($('#svA'),0.75,7.3);at($('#svB'),-1.6,7.2);at($('#svO2'),1.5,-2.6);
+  let run=0;
+  async function set(v,anim){const my=++run,d=D[v];
+    p.setAttribute('d',line([1.25,6.95],d.to));
+    z.setAttribute('x',X(d.z[0]));z.setAttribute('y',Y(d.z[2]));z.setAttribute('width',30*(d.z[1]-d.z[0]));z.setAttribute('height',30*(d.z[3]-d.z[2]));z.setAttribute('class','tz '+d.k);
+    zt.setAttribute('x',X((d.z[0]+d.z[1])/2));zt.setAttribute('y',Y(d.z[3])+14);zt.textContent=d.zl;
+    lamp(o,d.k,d.h,d.w,d.y);at(O1,d.o[0],d.o[1]);
+    if(!anim){park(ball,p,1);at(O1,d.r[0],d.r[1]);return;}
+    park(ball,p,0);await wait(450);if(my!==run)return;
+    at(O1,d.r[0],d.r[1]);await fly(ball,p,1000);
+  }
+  seg($('#svSeg'),set);set('deep',false);
+})();
+
+/* ---- 03 return ---- */
+(function(){
+  const svg=$('#rtSvg');
+  const D={deep:{to:[-1.3,-5.9],k:'go',h:'為何選「高且深（High & Deep）」慢速長球？',w:'面對對手深發球或強勁發球時。',y:'為自身爭取 1.5–2.0 秒充足滯空時間從容上廚房線；若打平快短球會壓縮自己上網時間，在半途被抓腳底。',z:[-HW,HW,-BL,-5.3],zl:'深區',dur:1700},
+           mid:{to:[0.1,-5.8],k:'alt',h:'落點決策｜打雙打中路',w:'想縮小對手第 3 拍的回球角度時。',y:'縮小對手回球角度、製造搭檔搶球與溝通混亂。',z:[-0.8,0.8,-BL,-4.8],zl:'中路：你的？我的？',dur:1700},
+           bh:{to:[2.5,-6.0],k:'alt',h:'落點決策｜打反手深角',w:'對手第 3 拍正手強抽（Drive）威脅大時。',y:'精準推向對手深反手底角，封死其第 3 拍正手強抽（Drive）威力。',z:[1.9,HW,-BL,-5.3],zl:'反手深角',dur:1700},
+           flat:{to:[-1.0,-4.5],k:'stop',h:'反例｜平快短球',w:'把接發球打成又平、又快、又短的球。',y:'若打平快短球會壓縮自己上網時間，在半途被抓腳底。',z:[-HW,HW,KL,5.0],zl:'你還卡在過渡區',dur:750}};
+  svg.innerHTML=full({under:'<rect id="rtZ" class="tz"/>',over:'<path id="rtP" class="traj"/><path id="rtP2" class="traj bad fade hide" d="'+line([-1.1,-5.2],[1.35,3.1])+'"/><path id="rtRun" class="run"/><text id="rtZT" class="tc" text-anchor="middle"></text>'+
+    P('rtO1','','opp','發球者')+P('rtO2','','opp')+P('rtB','P','','搭檔')+P('rtA','YOU')+'<circle id="rtBall" class="ball" r="6"/>'});
+  const A=$('#rtA'),O1=$('#rtO1'),O2=$('#rtO2'),ball=$('#rtBall'),p=$('#rtP'),p2=$('#rtP2'),z=$('#rtZ'),zt=$('#rtZT'),o=$('#rtOut'),rn=$('#rtRun');
+  at($('#rtB'),-1.5,2.6);
+  let run=0;
+  async function set(v,anim){const my=++run,d=D[v],end=v==='flat'?[1.3,3.5]:[1.3,2.6];
+    p.setAttribute('d',line([1.65,7.2],d.to));p2.classList.add('hide');p.classList.toggle('bad',v==='flat');
+    rn.setAttribute('d',line([1.25,7.4],end));
+    z.setAttribute('x',X(d.z[0]));z.setAttribute('y',Y(d.z[2]));z.setAttribute('width',30*(d.z[1]-d.z[0]));z.setAttribute('height',30*(d.z[3]-d.z[2]));z.setAttribute('class','tz '+d.k);
+    zt.setAttribute('x',X((d.z[0]+d.z[1])/2));zt.setAttribute('y',v==='flat'?Y(d.z[3])-8:Y(d.z[3])+14);zt.textContent=d.zl;zt.setAttribute('class','tc '+(v==='flat'?'r':'y'));
+    lamp(o,d.k,d.h,d.w,d.y);
+    at(O1,-0.85,-7.3);at(O2,1.6,-7.2);
+    if(!anim){at(A,end[0],end[1]);park(ball,v==='flat'?p2:p,1);if(v==='flat')p2.classList.remove('hide');return;}
+    at(A,1.25,7.4);park(ball,p,0);await wait(450);if(my!==run)return;
+    A.style.transitionDuration=(v==='flat'?1.3:1.6)+'s';at(A,end[0],end[1]);
+    if(v==='mid'){at(O1,-0.5,-6.9);at(O2,0.7,-6.9);}
+    if(v==='bh')at(O2,2.3,-7.2);
+    if(v==='flat')at(O1,-0.9,-5.5);
+    if(!await fly(ball,p,d.dur)||my!==run)return;
+    if(v==='flat'){p2.classList.remove('hide');await wait(200);if(my!==run)return;await fly(ball,p2,600);}
+    A.style.transitionDuration='';
+  }
+  seg($('#rtSeg'),set);set('deep',false);
+})();
+
+/* ---- 04 third shot (side view) ---- */
+(function(){
+  const svg=$('#thSvg');
+  const D={drive:{in:arc([-7.4,0.8],[3.0,0],[-2.5,2.6]),out:arc([4.0,0.9],[-3.9,0.45],[0,1.25]),y0:5.2,y1:3.9,o0:-7.4,o1:-4.2,k:'go',h:'綠燈｜選「抽球 (Drive)」',
+             w:'1. 對手接發偏淺／偏高：距離近、下壓角度大，成功率最高。 2. 對手仍在跑動上網未站穩。',y:'快球抓腳底逼出肉包球，讓搭檔 Drive & Crash 撲殺或自己輕鬆打第 5 拍 Drop。',l:'過網 1 呎內，急墜到膝蓋以下',lx:1.6,ly:1.55,d:520},
+           drop:{in:arc([-7.4,0.8],[6.2,0],[-0.5,6.2]),out:arc([7.3,0.4],[-1.3,0],[3.4,4.3]),y0:7.4,y1:2.7,o0:-7.4,o1:-2.5,k:'stop',h:'紅燈｜改選「吊球 (Drop)」',
+             w:'接發球極深且低、自己後仰失衡，且對手已站穩廚房線。',y:'失衡強抽易掛網或出界，改打頂點在己方半場的軟吊球爭取上網時間。',l:'頂點在己方半場',lx:3.4,ly:2.6,d:1300},
+           net:{in:arc([-7.4,0.8],[6.2,0],[-0.5,6.2]),out:arc([7.3,0.4],[0.05,0.55],[3.6,1.5]),y0:7.4,y1:7.4,o0:-7.4,o1:-2.5,k:'stop',h:'反例｜紅燈還硬抽',
+             w:'接發球極深且低、自己後仰失衡，卻還是選擇強抽。',y:'失衡強抽易掛網或出界。',l:'✕ 掛網',lx:1.3,ly:1.3,d:520}};
+  svg.innerHTML=side('<path id="thIn" class="traj alt"/><path id="thOut2" class="traj"/><text id="thL" class="tc y" text-anchor="middle"></text>'+SP('thY','YOU')+SP('thO','對手','opp')+'<circle id="thB" class="ball" r="6"/>');
+  const Yp=$('#thY'),O=$('#thO'),b=$('#thB'),pi=$('#thIn'),po=$('#thOut2'),L=$('#thL'),o=$('#thOut');let cur='drive',run=0;
+  async function set(v,anim){cur=v;const my=++run,d=D[v];
+    pi.setAttribute('d',d.in);po.setAttribute('d',d.out);po.classList.toggle('bad',v==='net');
+    L.setAttribute('x',SX(d.lx));L.setAttribute('y',SY(d.ly));L.textContent=d.l;L.setAttribute('class','tc '+(v==='net'?'r':'y'));
+    lamp(o,d.k,d.h,d.w,d.y);pick($('#thSeg'),v);
+    if(!anim){mv(Yp,SX(d.y1),220);mv(O,SX(d.o1),220);park(b,po,1);return;}
+    mv(Yp,SX(d.y0+0.5),220);mv(O,SX(d.o0),220);park(b,pi,0);await wait(350);if(my!==run)return;
+    O.style.transitionDuration='1.6s';mv(O,SX(d.o1),220);
+    if(!await fly(b,pi,v==='drive'?1000:1400)||my!==run)return;
+    if(!await fly(b,po,d.d)||my!==run)return;
+    mv(Yp,SX(d.y1),220);O.style.transitionDuration='';
+  }
+  seg($('#thSeg'),set);$('#thPlay').addEventListener('click',()=>set(cur,true));set('drive',false);
+})();
+
+/* ---- 05 fourth shot (side view) ---- */
+(function(){
+  const svg=$('#foSvg');
+  const D={punch:{in:arc([-6.6,0.8],[2.0,1.2],[-2.0,1.75]),out:arc([2.0,1.2],[-5.6,0],[-1.0,1.5]),o:-5.3,l:'來球高於網帶',h:'Punch Volley ｜ 借力推深',t:'來球高於網帶，或迎擊對手第 3 拍強抽。不拉拍、鎖腕向前頂出 6 吋，把球深壓回對手底線／腳邊。',di:520,dout:620},
+           roll:{in:arc([-7.0,0.6],[1.9,0.9],[-2.4,4.6]),out:arc([1.9,0.9],[-3.5,0],[-0.3,1.35]),o:-4.0,l:'網帶高度、下墜中',h:'Roll Volley ｜ 上旋壓腳尖',t:'對手 Drop 略高，球在網帶高度或下墜中。高度不足以平推，靠上旋越網急沉壓在過渡區對手腳尖，逼其抬高下一拍。',di:1100,dout:620},
+           flick:{in:arc([-2.0,0.45],[1.9,0.95],[-0.2,1.9]),out:arc([1.9,0.95],[-2.3,1.0],[0,1.18]),o:-2.6,l:'廚房區略微浮高',h:'Flick ｜ 突襲 Chicken Wing',t:'廚房區來球略微浮高、對手重心偏離或未防備時。姿勢和丁克一樣，觸球瞬間手指抓緊、微甩手腕，突襲執拍肩腋下。',di:750,dout:280}};
+  svg.innerHTML=side('<line x1="'+SX(3.2)+'" y1="'+SY(0.9)+'" x2="'+SX(-3.2)+'" y2="'+SY(0.9)+'" stroke="#F3F7FB" stroke-opacity=".35" stroke-dasharray="2 5"/><text x="'+SX(3.25)+'" y="'+(SY(0.9)+4)+'" class="t w" text-anchor="end">網帶高度</text>'+
+    '<path id="foIn" class="traj alt"/><path id="foO2" class="traj"/><text id="foL" class="tc y" text-anchor="middle"></text>'+SP('foY','YOU')+SP('foO','對手','opp')+'<circle id="foB" class="ball" r="6"/>');
+  const O=$('#foO'),b=$('#foB'),pi=$('#foIn'),po=$('#foO2'),L=$('#foL'),o=$('#foOut'),cards=$('#foCards');let cur='punch',run=0;
+  mv($('#foY'),SX(2.55),220);
+  async function set(v,anim){cur=v;const my=++run,d=D[v];
+    pi.setAttribute('d',d.in);po.setAttribute('d',d.out);pick(cards,v);out(o,d.h,d.t);
+    L.setAttribute('x',SX(0.9));L.setAttribute('y',SY(v==='roll'?2.5:1.95));L.textContent=d.l;
+    mv(O,SX(d.o),220);
+    if(!anim){park(b,po,1);return;}
+    if(!await fly(b,pi,d.di)||my!==run)return;await fly(b,po,d.dout);
+  }
+  seg(cards,set);$('#foPlay').addEventListener('click',()=>set(cur,true));set('punch',false);
+})();
+
+/* ---- 06 fifth shot ---- */
+(function(){
+  const svg=$('#fiSvg');
+  svg.innerHTML=full({under:'<rect id="fiZ" class="tz stop fade" x="'+X(-HW)+'" y="'+Y(KL)+'" width="'+(60*HW)+'" height="'+(30*(5-KL))+'"/>',
+    over:'<g id="fiG0" class="fade"><path id="fiIn0" class="traj alt" d="'+line([-1.0,-2.3],[1.1,4.0])+'"/><path id="fiP0" class="traj" d="'+line([1.1,4.0],[-0.7,-1.2])+'"/><text x="'+X(-1.9)+'" y="'+Y(3.7)+'" class="tc r" text-anchor="middle">過渡區</text><text x="'+X(-1.2)+'" y="'+Y(-1.35)+'" class="tc y" text-anchor="end">輕卸入廚房</text></g>'+
+    '<g id="fiG1" class="fade"><path id="fiIn1" class="traj alt" d="'+line([-1.0,-2.0],[1.7,1.2])+'"/><path id="fiP1" class="traj" d="'+line([1.9,1.9],[-2.5,-1.7])+'"/><circle cx="130" cy="235" r="8" fill="none" stroke="#E4F23F" stroke-width="2.5"/><text x="134" y="252" class="tc y">網中央 34 吋</text><text x="'+X(-3.3)+'" y="252" class="tc">36 吋</text><text x="'+X(-2.6)+'" y="'+Y(-1.2)+'" class="tc y">對角大角度</text></g>'+
+    P('fiO1','','opp')+P('fiO2','','opp')+P('fiB','P')+P('fiA','YOU')+'<circle id="fiBall" class="ball" r="6"/>'});
+  const A=$('#fiA'),B=$('#fiB'),O1=$('#fiO1'),ball=$('#fiBall'),o=$('#fiOut'),cards=$('#fiCards');let cur='reset',run=0;
+  at($('#fiO2'),1.5,-2.6);
+  const T={reset:['Reset ｜ 決策原因','低於膝蓋硬抽 90% 掛網或彈高被殺！軟手卸入廚房能強迫對手彎腰向上提球、中斷其攻勢，為自己爭取最後兩步安全踏上廚房線。'],
+           dink:['長丁克 ｜ 決策原因','瞄準球網中央 34 吋最低處打出壓迫腳邊或大角度長丁克，能大幅拉扯對手防線、逼其後退冒高，為下一拍 Speedup 突擊或扣殺創造絕佳機會。']};
+  async function set(v,anim){cur=v;const my=++run,i=v==='reset'?0:1;
+    [0,1].forEach(k=>$('#fiG'+k).classList.toggle('hide',k!==i));$('#fiZ').classList.toggle('hide',i!==0);
+    pick(cards,v);out(o,T[v][0],T[v][1]);
+    at(O1,-0.6,-2.7);
+    if(i===0){at(A,1.1,4.5);at(B,-1.4,4.6);}else{at(A,1.95,2.6);at(B,-1.4,2.6);}
+    const done=()=>{if(i===0){at(A,1.0,2.6);at(B,-1.4,2.6);}else at(O1,-2.45,-2.8);};
+    if(!anim){park(ball,$('#fiP'+i),1);done();return;}
+    if(!await fly(ball,$('#fiIn'+i),i?850:500)||my!==run)return;
+    if(i===1)at(O1,-2.45,-2.8);
+    if(!await fly(ball,$('#fiP'+i),i?800:1050)||my!==run)return;done();
+  }
+  seg(cards,set);$('#fiPlay').addEventListener('click',()=>set(cur,true));set('reset',false);
+})();
+
+/* ---- 07 quiz ---- */
+(function(){
+  const Q=[['發球的「黃金法則」，三個要素的優先順序是？',['速度 ＞ 旋轉 ＞ 深度','深度 ＞ 旋轉 ＞ 速度','旋轉 ＞ 速度 ＞ 深度'],1,'深度 80% ＞ 旋轉 15% ＞ 速度 5%。先把對手釘在底線深處。'],
+           ['接發球（第 2 拍）的唯一目標是什麼？',['拼一拍直接得分','把球打得又平又快','護送自己與搭檔站穩廚房線'],2,'高深弧線換時間，100% 搶佔廚房線，絕非拼一拍得分。'],
+           ['對手接發偏淺偏高，而且人還在跑動上網。第 3 拍選什麼？',['抽球 Drive','吊球 Drop','高吊過頂'],0,'綠燈：距離近、下壓角度大，快球抓腳底逼出肉包球。'],
+           ['接發球極深且低、你後仰失衡，對手已站穩廚房線。第 3 拍選什麼？',['全力抽球','吊球 Drop','手腕快挑'],1,'紅燈：失衡強抽易掛網或出界，改打頂點在己方半場的軟吊球爭取上網時間。'],
+           ['對手的 Drop 略高，球在網帶高度、正在下墜。第 4 拍用哪一招？',['Punch 拳擊推截擊','Roll 上旋滾截擊','等球落地再打'],1,'高度不足以平推，靠上旋越網急沉壓在過渡區對手腳尖，逼其抬高下一拍。'],
+           ['你卡在過渡區，對手第 4 拍把球壓到你腳邊。第 5 拍怎麼打？',['低點硬抽回去','軟手 Reset 卸進廚房','直接挑高球'],1,'低於膝蓋硬抽 90% 掛網或彈高被殺。握力 2–3/10、拍面開 45° 不揮拍，把球輕卸入廚房。']];
+  const box=$('#quizBox');let done=0,right=0;
+  box.innerHTML=Q.map((q,i)=>'<div class="q" data-i="'+i+'"><h3><b>Q'+(i+1)+'</b>'+q[0]+'</h3><div class="opts">'+q[1].map((a,j)=>'<button data-j="'+j+'">'+a+'</button>').join('')+'</div><p class="why" aria-live="polite"></p></div>').join('')+
+    '<div class="score"><span class="big" id="qScore">0 / 6</span><span id="qMsg">每題選一個答案，馬上看解析。</span><button class="btn ghost" id="qReset">重新作答</button></div>';
+  const upd=()=>{$('#qScore').textContent=right+' / '+Q.length;if(done===Q.length)$('#qMsg').textContent=right===Q.length?'全對。可以上場了。':right>=4?'基礎穩了，回頭複習答錯的那一拍。':'再把戰術板玩一遍，然後重測。';};
+  box.addEventListener('click',e=>{
+    const b=e.target.closest('.opts button');if(!b||b.disabled)return;
+    const q=b.closest('.q'),i=+q.dataset.i,j=+b.dataset.j,ok=j===Q[i][2];
+    $$('button',q).forEach((x,k)=>{x.disabled=true;if(k===Q[i][2])x.classList.add('ok');});
+    if(!ok)b.classList.add('no');
+    $('.why',q).textContent=(ok?'答對。':'答錯。')+Q[i][3];done++;if(ok)right++;upd();
+  });
+  $('#qReset').addEventListener('click',()=>{done=right=0;$$('.opts button',box).forEach(x=>{x.disabled=false;x.classList.remove('ok','no');});$$('.why',box).forEach(x=>x.textContent='');$('#qMsg').textContent='每題選一個答案，馬上看解析。';upd();});
+})();
+
+/* ---- rail ---- */
+(function(){
+  const links=$$('.rail a'),map={};
+  links.forEach(a=>{const id=a.getAttribute('href').slice(1);map[id]=a;
+    a.addEventListener('click',e=>{e.preventDefault();document.getElementById(id).scrollIntoView({behavior:reduce?'auto':'smooth',block:'start'});});});
+  if(!('IntersectionObserver' in window)){links[0].classList.add('on');return;}
+  const io=new IntersectionObserver(es=>{es.forEach(en=>{if(en.isIntersecting){links.forEach(l=>l.classList.remove('on'));const a=map[en.target.id];a.classList.add('on');
+    if(a.parentElement.scrollWidth>a.parentElement.clientWidth)a.parentElement.scrollLeft=a.offsetLeft-40;}});},{rootMargin:'-35% 0px -60% 0px'});
+  $$('.ch').forEach(s=>io.observe(s));links[0].classList.add('on');
+})();
+})();
+</script>
+</body>
+</html>

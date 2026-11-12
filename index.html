@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NinjaPB 3D 第一人稱戰術場</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: the court fills the screen; chalk-line panels float over it like a coach's clipboard.
+   Night court, blue service courts, green kitchen, one optic-yellow ball. The only extra colours are the
+   three lamps of the deck's decision traffic light. Single theme by choice. */
+:root{
+  color-scheme:dark;
+  --ink:#071E3D; --panel:rgba(9,34,68,.86); --court:#1463B8; --line:#F3F7FB; --mute:#A9C2DE;
+  --ball:#E4F23F; --danger:#FF6A4D; --go:#4FE39B; --alt:#FFC53D; --ice:#8FE3FF; --rule:rgba(243,247,251,.2);
+  --display:"Big Shoulders Display","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  --body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--ink);color:var(--line);font-family:var(--body);font-size:14px;line-height:1.6;overflow:hidden;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--ball);outline-offset:2px}
+#stage{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab}
+#stage:active{cursor:grabbing}
+.hud{position:fixed;z-index:2;pointer-events:none}
+.hud>*{pointer-events:auto}
+.box{background:var(--panel);border:1px solid var(--rule);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.eyebrow{font-family:var(--display);font-weight:800;letter-spacing:.14em;font-size:12px;color:var(--ball);text-transform:uppercase}
+
+/* top-left: title */
+.top{top:12px;left:12px;right:12px;display:flex;gap:12px;align-items:flex-start;justify-content:space-between}
+.title{padding:10px 14px;display:grid;grid-template-columns:auto minmax(0,1fr);gap:0 12px;align-items:center;max-width:min(560px,100%)}
+.title .no{font-family:var(--display);font-weight:900;font-size:46px;line-height:.9;color:transparent;-webkit-text-stroke:1.5px var(--line);grid-row:span 2}
+.title h1{margin:0;font-size:18px;font-weight:900;line-height:1.3;text-wrap:balance}
+.nav{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.nav button,.ghost{background:var(--panel);border:1px solid var(--line);padding:7px 12px;font-weight:700;font-size:13px}
+#to2d{background:var(--ball);color:var(--ink);border-color:var(--ball);text-decoration:none;font-weight:900;line-height:1.6;white-space:nowrap}
+.nav button:hover,.ghost:hover{background:rgba(243,247,251,.14)}
+#sound[aria-pressed="true"]{background:var(--ball);color:var(--ink);border-color:var(--ball)}
+#panelToggle{display:none}
+
+/* left: chapters */
+#chapters{position:fixed;z-index:2;left:12px;top:96px;bottom:auto;max-height:calc(100% - 300px);width:212px;overflow:auto;display:flex;flex-direction:column;gap:0;padding:6px 0}
+#chapters button{background:transparent;border:0;border-left:3px solid transparent;text-align:left;padding:6px 12px;display:flex;gap:10px;align-items:baseline;color:var(--mute);font-size:13px;font-weight:500;line-height:1.35}
+#chapters button b{font-family:var(--display);font-weight:800;font-size:15px;min-width:1.4em}
+#chapters button:hover{color:var(--line)}
+#chapters button[aria-current="true"]{color:var(--line);border-left-color:var(--ball);background:rgba(243,247,251,.08)}
+#chapters button[aria-current="true"] b{color:var(--ball)}
+
+/* right: technique */
+.panel{top:96px;right:12px;width:300px;max-height:calc(100% - 300px);overflow:auto;padding:14px;display:grid;gap:12px}
+.panel h2{margin:2px 0 0;font-size:19px;font-weight:900;line-height:1.3}
+.dial{display:grid;grid-template-columns:120px minmax(0,1fr);gap:12px;align-items:center;border:1px solid var(--rule);padding:8px}
+.dial svg{display:block;width:120px;height:120px}
+.dial .big{font-family:var(--display);font-weight:900;font-size:28px;line-height:1;color:var(--ball);font-variant-numeric:tabular-nums}
+.dial small{display:block;color:var(--mute);font-size:12px;line-height:1.4;margin-top:4px}
+dl{margin:0;display:grid;grid-template-columns:auto minmax(0,1fr);gap:0;border-top:1px solid var(--rule)}
+dt,dd{margin:0;padding:7px 0;border-bottom:1px solid var(--rule);font-size:13px;line-height:1.55}
+dt{font-weight:700;color:var(--mute);padding-right:12px;white-space:nowrap}
+#points{margin:0;padding:0 0 0 1.1em;display:grid;gap:5px;font-size:13px;line-height:1.55;color:var(--mute)}
+.note{font-size:11.5px;color:var(--mute);line-height:1.5}
+#key{margin:0;font-size:13.5px;font-weight:700;line-height:1.55;border-left:3px solid var(--ball);padding-left:10px}
+#key:empty{display:none}
+/* decision traffic light */
+#light{--lamp:var(--go);border:1px solid var(--rule);border-left:4px solid var(--lamp);padding:10px;display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px 10px;align-items:start}
+#light[data-light="alt"]{--lamp:var(--alt)} #light[data-light="stop"]{--lamp:var(--danger)}
+#light[hidden],#vidBox[hidden]{display:none}
+.lamps{display:grid;gap:4px;padding:5px;background:#04122a;border-radius:9px}
+.lamps i{width:13px;height:13px;border-radius:50%;background:rgba(243,247,251,.14)}
+#light[data-light="go"] .lamps i:nth-child(3){background:var(--go);box-shadow:0 0 9px var(--go)}
+#light[data-light="alt"] .lamps i:nth-child(2){background:var(--alt);box-shadow:0 0 9px var(--alt)}
+#light[data-light="stop"] .lamps i:nth-child(1){background:var(--danger);box-shadow:0 0 9px var(--danger)}
+#ltTag{font-family:var(--display);font-weight:900;letter-spacing:.1em;font-size:13px;color:var(--lamp)}
+#ltTitle{margin:0;font-size:14.5px;font-weight:900;line-height:1.4}
+#light dl{grid-column:1/-1}
+#vids{margin:0;padding:0;list-style:none;display:grid;gap:6px;font-size:12.5px;line-height:1.5;color:var(--mute)}
+#vids b{display:block;color:var(--line);font-weight:700}
+/* coaching and gear sheet */
+#info{position:fixed;inset:0;z-index:6;background:rgba(3,12,28,.72);display:grid;place-items:center;padding:16px}
+#info[hidden]{display:none}
+.sheet{width:min(860px,100%);max-height:100%;overflow:auto;padding:18px 20px 20px;display:grid;gap:18px;background:rgba(9,34,68,.97)}
+.sheet header{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.sheet header b{font-family:var(--display);font-weight:900;font-size:26px;letter-spacing:.04em}
+#infoBody{display:grid;gap:22px}
+#infoBody h2{margin:2px 0 4px;font-size:20px;font-weight:900;line-height:1.3}
+#infoBody .sub{margin:0 0 8px;color:var(--mute);font-size:13px}
+#infoBody ul{margin:0;padding-left:1.1em;display:grid;gap:4px;font-size:13.5px}
+#infoBody .where{margin:12px 0 6px;font-weight:700;font-size:13px;color:var(--ball)}
+.plans{list-style:none;margin:0;padding:0;display:grid;gap:0;border-top:1px solid var(--rule)}
+.plans li{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;padding:9px 0;border-bottom:1px solid var(--rule)}
+.plans b{font-family:var(--display);font-weight:900;font-size:26px;line-height:1;color:transparent;-webkit-text-stroke:1.2px var(--line)}
+.plans strong,.gear strong{display:block;font-size:14.5px}
+.plans span,.gear span{display:block;color:var(--mute);font-size:13px}
+#infoBody ul.gear{list-style:none;padding:0;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.gear li{border:1px solid var(--rule);padding:10px;display:grid;gap:3px;align-content:start}
+.gear em{font-style:normal;font-size:12px;color:var(--ice)}
+.gear small{color:var(--ball);font-size:12px;font-weight:700;margin-top:4px}
+.code{margin:10px 0 0;display:flex;gap:12px;align-items:center;flex-wrap:wrap;font-size:13px}
+.code b{font-family:var(--display);font-weight:900;font-size:24px;letter-spacing:.14em;background:var(--ball);color:var(--ink);padding:2px 12px}
+.code span{flex:1 1 260px}
+.links{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px}
+.links a{border:1px solid var(--line);padding:9px 12px;color:var(--line);text-decoration:none;display:grid;gap:1px}
+.links a:hover{background:rgba(243,247,251,.12)}
+.links a span{font-size:12px;color:var(--mute)} .links a b{font-size:14px;overflow-wrap:anywhere}
+
+/* bottom: caption + controls */
+.dock{left:12px;right:12px;bottom:12px;display:grid;gap:8px;justify-items:center}
+#caption{font-size:clamp(15px,2.1vw,21px);font-weight:900;line-height:1.4;text-align:center;padding:6px 14px;background:rgba(7,30,61,.8);min-height:1.4em;max-width:44em;text-wrap:balance}
+#caption:empty{visibility:hidden}
+#badge{font-family:var(--display);font-weight:900;letter-spacing:.06em;font-size:18px;background:var(--ball);color:var(--ink);padding:4px 14px}
+.bar{padding:10px 12px;display:grid;gap:8px;width:min(980px,100%)}
+.row{display:flex;gap:8px 12px;align-items:center;flex-wrap:wrap}
+.seg{display:inline-flex;flex-wrap:wrap;border:1px solid var(--line)}
+.seg button{background:transparent;border:0;border-right:1px solid var(--line);padding:6px 11px;font-size:13px;font-weight:700;line-height:1.3}
+.seg button:last-child{border-right:0}
+.seg button:hover{background:rgba(243,247,251,.12)}
+.seg button[aria-pressed="true"]{background:var(--line);color:var(--ink)}
+#variants button[aria-pressed="true"]{background:var(--ball)}
+.btn{background:var(--ball);color:var(--ink);border:0;padding:7px 16px;font-weight:900;font-size:14px;min-width:4.6em}
+#scrub{flex:1 1 180px;min-width:120px;accent-color:var(--ball)}
+.chk{display:inline-flex;gap:5px;align-items:center;font-size:13px;font-weight:500;color:var(--mute)}
+.chk input{accent-color:var(--ball)}
+.lab{font-family:var(--display);font-weight:800;letter-spacing:.12em;font-size:11px;color:var(--mute);text-transform:uppercase}
+#nogl{position:fixed;inset:0;z-index:5;display:grid;place-items:center;padding:24px;text-align:center;background:var(--ink);font-size:16px}
+#nogl[hidden]{display:none}
+
+@media (max-width:900px){
+  #chapters{left:0;right:0;top:0;bottom:auto;width:auto;max-height:none;flex-direction:row;padding:0;background:var(--panel);border-bottom:1px solid var(--rule)}
+  #chapters button{flex:none;border-left:0;border-bottom:3px solid transparent;padding:9px 10px;white-space:nowrap;gap:6px}
+  #chapters button[aria-current="true"]{border-bottom-color:var(--ball)}
+  .top{top:50px;left:8px;right:8px}
+  .title{padding:7px 10px}.title .no{font-size:34px}.title h1{font-size:15px}
+  #panelToggle{display:inline-block}
+  .nav #prev,.nav #next{display:none}
+  .title .eyebrow{display:none}
+  .top{flex-direction:column;align-items:flex-start;gap:6px}
+  .nav{flex-wrap:nowrap;order:-1;justify-content:flex-start}.nav button,.nav a{padding:6px 9px;white-space:nowrap;font-size:12.5px}
+  .panel{display:none;top:142px;right:8px;left:8px;width:auto;max-height:calc(100% - 330px)}
+  body.panel-open .panel{display:grid}
+  .dock{left:8px;right:8px;bottom:8px}
+  .bar{padding:8px}
+}
+</style>
+</head>
+<body>
+<canvas id="stage" aria-label="3D 匹克球場，拖曳可以轉動視角"></canvas>
+<div id="info" hidden role="dialog" aria-modal="true" aria-label="課程與裝備">
+  <div class="sheet box">
+    <header><b>COACH NINJA</b><button class="ghost" id="infoClose">關閉</button></header>
+    <div id="infoBody"></div>
+  </div>
+</div>
+<div id="nogl" hidden>這個裝置無法啟用 3D 繪圖（WebGL）。請換一個瀏覽器或裝置再開啟。</div>
+
+<nav id="chapters" class="box" aria-label="章節"></nav>
+
+<div class="hud top">
+  <div class="title box">
+    <div class="no" id="chNo">01</div>
+    <div class="eyebrow" id="chEn"></div>
+    <h1 id="chTitle"></h1>
+  </div>
+  <div class="nav">
+    <button id="prev" aria-label="上一章">← 上一章</button>
+    <button id="next" aria-label="下一章">下一章 →</button>
+    <button id="panelToggle">技術要點</button>
+    <button id="infoBtn">課程與裝備</button>
+    <a class="ghost" id="to2d" href="/2d/">切換到 2D 指南 →</a>
+  </div>
+</div>
+
+<aside class="hud panel box" aria-label="技術要點">
+  <div id="light" hidden>
+    <div class="lamps" aria-hidden="true"><i></i><i></i><i></i></div>
+    <div><span class="eyebrow">決策紅綠燈 · </span><span id="ltTag"></span><h3 id="ltTitle"></h3></div>
+    <dl><dt>時機</dt><dd id="ltWhen"></dd><dt>原因</dt><dd id="ltWhy"></dd></dl>
+  </div>
+  <div><span class="eyebrow">球拍與拍面</span><h2 id="swName"></h2></div>
+  <div class="dial">
+    <svg viewBox="0 0 120 120" role="img" aria-label="拍面角度即時示意">
+      <line x1="8" y1="104" x2="112" y2="104" stroke="#A9C2DE" stroke-width="2"/>
+      <line x1="60" y1="62" x2="104" y2="62" stroke="#A9C2DE" stroke-width="1" stroke-dasharray="3 3"/>
+      <line id="dFace" x1="60" y1="28" x2="60" y2="96" stroke="#F3F7FB" stroke-width="7" stroke-linecap="round"/>
+      <line id="dNorm" x1="60" y1="62" x2="100" y2="62" stroke="#E4F23F" stroke-width="3" stroke-linecap="round"/>
+      <circle cx="60" cy="62" r="4" fill="#E4F23F"/>
+    </svg>
+    <div><span class="lab">拍面即時角度</span><div class="big" id="dTxt">—</div><small>黃線是拍面朝向。朝上為開放，朝下為關閉。</small></div>
+  </div>
+  <dl>
+    <dt>握拍與握力</dt><dd id="tGrip"></dd>
+    <dt>拍面</dt><dd id="tFace"></dd>
+    <dt>擊球點</dt><dd id="tPoint"></dd>
+    <dt>揮拍路徑</dt><dd id="tPath2"></dd>
+    <dt>旋轉</dt><dd id="tSpin"></dd>
+    <dt>本球擊球高度</dt><dd id="tHeight"></dd>
+    <dt>本球拍面設定</dt><dd id="tOpen"></dd>
+  </dl>
+  <div><span class="eyebrow">本章戰術重點</span></div>
+  <p id="key"></p>
+  <ul id="points"></ul>
+  <div id="vidBox" hidden><span class="eyebrow">權威影音</span><ul id="vids"></ul></div>
+  <p class="note">角度、球速與弧度為教學示意值；球略為放大以便觀察。小忍者皆為右手持拍，全身關節由持拍手的位置即時解算。音效為程式合成，區分球拍、落地與掛網。內容出自《NinjaPB 匹克球前五拍黃金決策》，Coach Ninja (@ninjapbtw) 監製。</p>
+</aside>
+
+<div class="hud dock">
+  <div id="badge" hidden></div>
+  <div id="caption" aria-live="polite"></div>
+  <div class="bar box">
+    <div class="row"><div class="seg" id="variants"></div></div>
+    <div class="row">
+      <button class="btn" id="play">暫停</button>
+      <button class="ghost" id="replay">從頭</button>
+      <input type="range" id="scrub" aria-label="時間軸，可拖曳逐格檢視">
+      <span class="lab">速度</span>
+      <div class="seg" id="speeds"><button data-v="1">1×</button><button data-v="0.5">½</button><button data-v="0.25">¼</button></div>
+    </div>
+    <div class="row">
+      <span class="lab">視角</span>
+      <div class="seg" id="views"><button data-v="fp">第一人稱</button><button data-v="shoulder">肩後</button><button data-v="side">拍面特寫</button><button data-v="top">俯瞰</button></div>
+      <label class="chk"><input type="checkbox" id="tPath" checked>球路軌跡</label>
+      <label class="chk"><input type="checkbox" id="tFreeze" checked>擊球瞬間慢放</label>
+      <label class="chk"><input type="checkbox" id="tArrow" checked>拍面箭頭</label>
+      <button class="ghost" id="sound" aria-pressed="false">點一下開啟音效</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="scenes.js"></script>
+<script src="rig.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
