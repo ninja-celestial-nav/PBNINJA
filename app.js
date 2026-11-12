@@ -164,24 +164,13 @@
   function rigOf(cloth, shadeC, accent, arrow) { return NinjaRig.create(THREE, scene, { col: col, cloth: cloth, shade: shadeC, accent: accent, paddle: makePaddle(arrow) }); }
   var A = { you: rigOf(0x1c2a47, 0x101a30, 0xE4F23F, true), partner: rigOf(0xe9eef5, 0xb9c4d4, 0xE4F23F), o1: rigOf(0xd9472f, 0x8f2a1a, 0x0b1e3b), o2: rigOf(0xd9472f, 0x8f2a1a, 0x0b1e3b) };
   var racket = A.you.paddle;
-  /* preview of the AI-generated mascot (TRELLIS, static, no skeleton yet): open the page with ?preview=mascot */
-  var mascot = null;
-  if (/[?&]preview=mascot\b/.test(location.search)) {
-    var gl = document.createElement("script"); gl.src = "/vendor/GLTFLoader.js";
-    gl.onload = function () {
-      new THREE.GLTFLoader().load("/models/ninja-mascot.glb", function (g) {
-        var m = g.scene, H = 1.35;
-        m.traverse(function (o) { if (o.isMesh) { o.geometry.computeVertexNormals(); o.material.metalness = 0; o.material.roughness = 0.55; o.material.envMapIntensity = 0.7; o.castShadow = true; } });
-        var box = new THREE.Box3().setFromObject(m), size = box.getSize(new V3()), k = H / size.y;
-        m.scale.setScalar(k); m.position.y = -box.min.y * k;
-        mascot = new THREE.Group(); mascot.add(m); mascot.position.set(-0.7, 0, 4.4); scene.add(mascot);
-        var tag = label("新角色預覽（尚未綁骨架）", "#E4F23F", 0.24); tag.position.set(0, H + 0.35, 0); mascot.add(tag);
-        var sh = plane(1.1, 1.1, new THREE.MeshBasicMaterial({ map: contactT, transparent: true, depthWrite: false, toneMapped: false })); sh.rotation.x = -Math.PI / 2; sh.position.y = 0.012; mascot.add(sh);
-        if (window.__pb) window.__pb.mascot = mascot;
-        wake();
-      });
-    };
-    document.body.appendChild(gl);
+  /* the sculpted ninja (TRELLIS mesh, skinned in mascot.js) takes over from the procedural one once the model has
+     loaded; ?ninja=classic keeps the procedural ninjas */
+  if (window.NinjaMascot && THREE.GLTFLoader && !/[?&]ninja=classic\b/.test(location.search)) {
+    NinjaMascot.load(THREE, function () {
+      NinjaMascot.attach(A.you, "you"); NinjaMascot.attach(A.partner, "partner"); NinjaMascot.attach(A.o1, "opp"); NinjaMascot.attach(A.o2, "opp");
+      update(0); wake();
+    });
   }
   /* soft contact shadow under every ninja so their feet sit on the court */
   var contactT = canvasTex(128, 128, function (g) { var r = g.createRadialGradient(64, 64, 4, 64, 64, 64); r.addColorStop(0, "rgba(0,8,24,.55)"); r.addColorStop(0.55, "rgba(0,8,24,.22)"); r.addColorStop(1, "rgba(0,8,24,0)"); g.fillStyle = r; g.fillRect(0, 0, 128, 128); });
@@ -342,7 +331,7 @@
     var b = basis(ys.yaw), org = new V3(ys.x, 0, ys.z), R = SW.ready, h = null, bd = 1e9;
     function mir(a, m) { return [a[0] * m, a[1], a[2]]; }
     function pose(k, dy, m) { var p = org.clone().add(toWorld(mir(k.pos, m || 1), b)); p.y += dy || 0; return { pos: p, q: quatFrom(toWorld(mir(k.n, m || 1), b), toWorld(mir(k.h, m || 1), b)) }; }
-    var ready = pose(R);
+    var ready = pose(R, A[id].readyDy || 0);                 /* a shorter body carries the ready paddle lower; contacts are unchanged */
     TL.ah[id].forEach(function (x) { var d = Math.abs(t - x.t); if (t >= x.t + x.sw.pre.dt - 0.3 && t <= x.t + x.sw.post.dt + 0.4 && d < bd) { bd = d; h = x; } });
     if (!h) return { pos: ready.pos, q: ready.q, hit: null, w: 0 };
     var sw = h.sw, m = h.bh ? -1 : 1, dy = sw.ry === undefined ? 0 : (h.ball.y - BR - sw.ry), a = h.t + sw.pre.dt - 0.3, bT = h.t + sw.pre.dt, c = h.t, d2 = h.t + sw.post.dt, e = d2 + 0.4;
@@ -532,8 +521,7 @@
   var last = 0;
   function frame(now) {
     var raw = now - last, dt = Math.min(0.05, raw / 1000 || 0); last = now;
-    if (mascot) mascot.rotation.y += Math.min(0.05, raw / 1000 || 0) * 0.7;
-    if (!S.playing && !Rec.on && !mascot && now > wakeUntil) { requestAnimationFrame(frame); return; }
+    if (!S.playing && !Rec.on && now > wakeUntil) { requestAnimationFrame(frame); return; }
     watchPerf(raw);
     if (S.playing) {
       var rate = S.speed;
@@ -766,6 +754,6 @@
   function start(d) { requestAnimationFrame(function () { requestAnimationFrame(function () { var l = $("#loading"); if (l) { l.classList.add("done"); setTimeout(function () { l.remove(); }, 600); } }); });
     var hsh = fromHash(); if (hsh) d = hsh;
     resize(); load(Math.min(CH.length - 1, (d && d.ci) || 0), 0); if (d && d.vi && CH[S.ci].v[d.vi]) load(S.ci, d.vi); requestAnimationFrame(frame); }
-  window.__pb = { snap: function () { camSnap = true; }, update: function (dt) { update(dt); }, TL: function () { return TL; }, cam: cam, A: A, FX: FX, renderer: renderer, Quiz: Quiz, Rec: Rec, S: S, load: load, Snd: Snd };
+  window.__pb = { snap: function () { camSnap = true; wake(); }, update: function (dt) { update(dt); }, TL: function () { return TL; }, cam: cam, A: A, FX: FX, renderer: renderer, Quiz: Quiz, Rec: Rec, S: S, load: load, Snd: Snd };
   if (hot && hot.ready) hot.ready(start); else start((hot && hot.data) || {});
 })();

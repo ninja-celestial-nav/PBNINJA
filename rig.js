@@ -3,10 +3,18 @@
    or set a stance, and the head tracks the ball. Local "front" of every part is -z. */
 (function (root) {
   "use strict";
-  var HIP = 0.55, TH = 0.27, SH = 0.27, ANK = 0.06, UA = 0.23, FA = 0.22, TORSO = 0.38, SHO = 0.2, GAIT = 0.2;
+  /* body proportions; a skinned character (mascot.js) swaps in its own through rig.setProp */
+  var DEF = { HIP: 0.55, TH: 0.27, SH: 0.27, ANK: 0.06, UA: 0.23, FA: 0.22, TORSO: 0.38, SHO: 0.2, SHD: 0.11, HJX: 0.1, HJY: 0.07, WST: 0.07, HEAD: 0.24, EYE: 0.22, GAIT: 0.2, JUMP: 0 };
 
   function create(THREE, scene, o) {
     var V3 = THREE.Vector3, UP = new V3(0, 1, 0), col = o.col;
+    var HIP, TH, SH, ANK, UA, FA, TORSO, SHO, SHD, HJX, HJY, WST, HEAD, EYE, GAIT, JUMP, LR, AR;
+    function setProp(p) {
+      var P = {}; for (var k in DEF) P[k] = p && p[k] != null ? p[k] : DEF[k];
+      HIP = P.HIP; TH = P.TH; SH = P.SH; ANK = P.ANK; UA = P.UA; FA = P.FA; TORSO = P.TORSO; SHO = P.SHO; SHD = P.SHD; HJX = P.HJX; HJY = P.HJY; WST = P.WST; HEAD = P.HEAD; EYE = P.EYE; GAIT = P.GAIT; JUMP = P.JUMP;
+      LR = (TH + SH) / 0.54; AR = (UA + FA) / 0.45;   /* leg / arm size against the default build */
+    }
+    setProp(null);
     function clamp(x, a, b) { return Math.max(a, Math.min(b, x)); }
     function basis(yaw) { return { r: new V3(Math.cos(yaw), 0, -Math.sin(yaw)), f: new V3(-Math.sin(yaw), 0, -Math.cos(yaw)) }; }
     function angDiff(a, b) { var d = (b - a) % (Math.PI * 2); if (d > Math.PI) d -= Math.PI * 2; if (d < -Math.PI) d += Math.PI * 2; return d; }
@@ -102,10 +110,14 @@
       }
     }
 
-    var rig = { group: g, tag: tag, paddle: paddle, eye: new V3(0, 1.45, 0) };
+    function jl() { return { hip: new V3(), knee: new V3(), ank: new V3(), yaw: 0 }; }
+    function ja() { return { sho: new V3(), elb: new V3(), hand: new V3() }; }
+    var J = { hipC: new V3(), hipYaw: 0, waist: new V3(), chestQ: new THREE.Quaternion(), hd: new V3(), pitch: 0, yaw: 0, fwdHip: new V3(), fwdChest: new V3(), leg: [jl(), jl()], arm: [ja(), ja()] };
+    var rig = { group: g, tag: tag, paddle: paddle, eye: new V3(0, 1.45, 0), body: body, upper: upper, setProp: setProp, J: J, fp: false };
     /* first person keeps only the paddle arm in view; the rest of the body would block or clutter the lens */
     var fpHide = null;
     rig.setFP = function (on) {
+      rig.fp = on; if (rig.onFP) rig.onFP(on);
       if (!fpHide) fpHide = [upper, pelvis, L.sho, L.up, L.elb, L.fore, L.hand, R.sho].concat([L, R].reduce(function (a, s) { return a.concat([s.thigh, s.knee, s.shin, s.foot]); }, []));
       fpHide.forEach(function (o) { o.visible = !on; });
     };
@@ -118,28 +130,28 @@
       var low = clamp((1.0 - hy) / 0.7, 0, 1) * w;
       var chestYaw = p.yaw - twist, hipYaw = p.yaw - twist * 0.4, cb = basis(chestYaw), hbz = basis(hipYaw);
       var hipC = p.root.clone().addScaledVector(b.f, clamp(lz - 0.35, -0.3, 0.4) * 0.32 * w).addScaledVector(b.r, clamp(lx - 0.25 * m, -0.35, 0.35) * 0.3 * w);
-      hipC.y = HIP - 0.02 - 0.2 * low - 0.06 * p.split * (1 - k) - 0.03 * k + Math.abs(Math.sin(gph)) * 0.035 * k + p.hop;
+      hipC.y = HIP - 0.02 + LR * (-0.2 * low - 0.06 * p.split * (1 - k) - 0.03 * k + Math.abs(Math.sin(gph)) * 0.035 * k) + p.hop;
       var dir = UP.clone().addScaledVector(hbz.f, Math.tan(0.07 + 0.4 * low + 0.17 * k)).addScaledVector(b.r, clamp(lx, -0.5, 0.6) * 0.2 * w).normalize();
       /* feet: a stance that opens with the trunk, or a running gait */
       var half = 0.15 + 0.08 * low + 0.06 * p.split, st = 0.18 * twist, vdir = speed > 0.05 ? p.vel.clone().multiplyScalar(1 / speed) : b.f;
       var feet = [-1, 1].map(function (s) {
         var stance = p.root.clone().addScaledVector(hbz.r, s * half).addScaledVector(b.f, -s * st + (s * m < 0 ? 0.5 : 0.15) * clamp(lz - 0.35, -0.3, 0.4) * w);
-        var run = p.root.clone().addScaledVector(hbz.r, s * 0.1).addScaledVector(vdir, -s * Math.sin(gph) * GAIT * 0.9);
-        var f = stance.lerp(run, k); f.y = ANK + Math.max(0, -s * Math.cos(gph)) * 0.13 * k + p.hop; return f;
+        var run = p.root.clone().addScaledVector(hbz.r, s * HJX).addScaledVector(vdir, -s * Math.sin(gph) * GAIT * 0.9);
+        var f = stance.lerp(run, k); f.y = ANK + Math.max(0, -s * Math.cos(gph)) * 0.13 * LR * k + p.hop; return f;
       });
       footwork(feet, p.t, k);
       function build() {
         var neck = hipC.clone().addScaledVector(dir, TORSO), xr = cb.r.clone().addScaledVector(dir, -cb.r.dot(dir)).normalize();
-        return { neck: neck, xr: xr, sR: neck.clone().addScaledVector(dir, -0.11).addScaledVector(xr, SHO), sL: neck.clone().addScaledVector(dir, -0.11).addScaledVector(xr, -SHO) };
+        return { neck: neck, xr: xr, sR: neck.clone().addScaledVector(dir, -SHD).addScaledVector(xr, SHO), sL: neck.clone().addScaledVector(dir, -SHD).addScaledVector(xr, -SHO) };
       }
       var T = build(), d = p.hand.clone().sub(T.sR), ex = d.length() - (UA + FA) * 0.97;
       if (ex > 0) { hipC.addScaledVector(d.normalize(), Math.min(ex, 0.45)); T = build(); }             /* reach with the body, not just the arm */
-      var hj = [-1, 1].map(function (s) { return hipC.clone().addScaledVector(hbz.r, s * 0.1).addScaledVector(UP, -0.07); });
+      var hj = [-1, 1].map(function (s) { return hipC.clone().addScaledVector(hbz.r, s * HJX).addScaledVector(UP, -HJY); });
       var over = 0; hj.forEach(function (h, i) { var f = feet[i], hd = Math.hypot(h.x - f.x, h.z - f.z), maxY = f.y + Math.sqrt(Math.max(0.02, Math.pow((TH + SH) * 0.992, 2) - hd * hd)); over = Math.max(over, h.y - maxY); });
-      if (over > 0) { if (ex > 0 && d.y > 0.5) feet.forEach(function (f) { f.y += over; }); else { hipC.y -= over; hj.forEach(function (h) { h.y -= over; }); T = build(); } }
+      if (over > 0) { if (ex > 0 && d.y > 0.5 && p.hand.y > JUMP) feet.forEach(function (f) { f.y += over; }); else { hipC.y -= over; hj.forEach(function (h) { h.y -= over; }); T = build(); } }
       /* place the trunk */
       pelvis.position.copy(hipC); pelvis.rotation.set(0, hipYaw, 0);
-      var waist = hipC.clone().addScaledVector(dir, 0.07), Z = new V3().crossVectors(T.xr, dir);
+      var waist = hipC.clone().addScaledVector(dir, WST), Z = new V3().crossVectors(T.xr, dir);
       chest.position.copy(waist); chest.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(T.xr, dir, Z));
       sashTails.rotation.x = 0.15 + 0.5 * k + Math.sin(p.t * 7) * 0.08;
       /* legs */
@@ -147,29 +159,34 @@
         var kn = ik(hj[i], feet[i], TH, SH, hbz.f.clone().addScaledVector(hbz.r, (i ? 1 : -1) * 0.3));
         put(s.thigh, hj[i], kn.mid); s.knee.position.copy(kn.mid); put(s.shin, kn.mid, kn.end);
         s.foot.position.copy(kn.end); s.foot.rotation.set(0, hipYaw + (i ? -1 : 1) * 0.16 * (1 - k), 0);
+        J.leg[i].hip.copy(hj[i]); J.leg[i].knee.copy(kn.mid); J.leg[i].ank.copy(kn.end); J.leg[i].yaw = s.foot.rotation.y;
       });
       /* paddle arm */
       function arm(s, S, target, pole) {
         var dist = target.distanceTo(S), sc = Math.max(1, dist / ((UA + FA) * 0.998)), e = ik(S, target, UA * sc, FA * sc, pole);
         s.sho.position.copy(S); put(s.up, S, e.mid); s.elb.position.copy(e.mid); put(s.fore, e.mid, e.end); s.hand.position.copy(e.end);
+        var a = J.arm[s === L ? 0 : 1]; a.sho.copy(S); a.elb.copy(e.mid); a.hand.copy(e.end);
       }
       var hi = clamp((p.hand.y - T.sR.y + 0.05) / 0.3, 0, 1);
       arm(R, T.sR, p.hand, new V3().addScaledVector(UP, -0.9 + 0.7 * hi).addScaledVector(T.xr, 0.5 + 0.4 * hi).addScaledVector(cb.f, -0.35));
       /* free arm: holds the ball for the serve, points and counter-balances on the swing, pumps when running */
       var tw = twist * m, lt;
       if (p.hold) lt = p.ball.clone().addScaledVector(UP, -0.06);
-      else lt = T.sL.clone().addScaledVector(cb.f, 0.2 + 0.24 * Math.max(0, tw) - Math.sin(gph) * 0.16 * k).addScaledVector(UP, -0.2 + 0.26 * Math.max(0, tw) + 0.05 * k)
-        .addScaledVector(T.xr, 0.02 + 0.2 * Math.max(0, -tw) - 0.06 * Math.max(0, tw));
+      else lt = T.sL.clone().addScaledVector(cb.f, AR * (0.2 + 0.24 * Math.max(0, tw) - Math.sin(gph) * 0.16 * k)).addScaledVector(UP, AR * (-0.2 + 0.26 * Math.max(0, tw) + 0.05 * k))
+        .addScaledVector(T.xr, AR * (0.02 + 0.2 * Math.max(0, -tw) - 0.06 * Math.max(0, tw)));
       arm(L, T.sL, lt, new V3().addScaledVector(UP, -0.9).addScaledVector(T.xr, -0.5).addScaledVector(cb.f, -0.35));
       /* head: stays level and watches the ball */
-      var hd = T.neck.clone().addScaledVector(dir.clone().add(UP).normalize(), 0.24), look = p.ball.clone().sub(hd), ll = look.length() || 1;
+      var hd = T.neck.clone().addScaledVector(dir.clone().add(UP).normalize(), HEAD), look = p.ball.clone().sub(hd), ll = look.length() || 1;
       var want = Math.atan2(-look.x, -look.z);
       head.position.copy(hd); head.rotation.order = "YXZ";
       head.rotation.set(clamp(Math.asin(clamp(look.y / ll, -1, 1)), -0.55, 0.5), chestYaw + clamp(angDiff(chestYaw, want), -1.0, 1.0), 0);
       tails.rotation.x = 0.55 + Math.sin(p.t * 8) * 0.12 - k * 0.45; tails.rotation.y = Math.sin(p.t * 5.3) * 0.2;
       paddle.position.copy(p.pPos); paddle.quaternion.copy(p.pQ);
       tag.position.set(hd.x, hd.y + 0.5, hd.z);
-      rig.eye.copy(hd).addScaledVector(UP, 0.22);
+      rig.eye.copy(hd).addScaledVector(UP, EYE);
+      J.hipC.copy(hipC); J.hipYaw = hipYaw; J.waist.copy(waist); J.chestQ.copy(chest.quaternion); J.hd.copy(hd);
+      J.pitch = head.rotation.x; J.yaw = head.rotation.y; J.fwdHip.copy(hbz.f); J.fwdChest.copy(cb.f);
+      if (rig.onUpdate) rig.onUpdate(J);
       return rig;
     };
     return rig;
