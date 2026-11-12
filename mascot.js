@@ -5,7 +5,7 @@
    recolour (cloth and trim swapped, skin, eyes and soles kept). */
 (function (root) {
   "use strict";
-  var URL = "/models/ninja-mascot.glb", K = 1.5;          /* model height in metres */
+  var URL = "/models/ninja-mascot.glb", K = 1.62, KS = K / 1.5;   /* model height in metres; joints below are measured at 1.5 m */
   /* bind joints in metres: feet on the floor, front -z, the paddle (right) side at +x */
   var B = {
     hipC: [0, 0.315, 0], waist: [0, 0.375, 0], hd: [0, 1.11, 0],
@@ -14,9 +14,18 @@
   };
   /* rig proportions for this body: own trunk and head, legs and arms a little longer than the sculpt so the
      strokes still reach the contact points the ball flights were solved for */
-  var PROP = { HIP: 0.38, TH: 0.1, SH: 0.1, ANK: 0.105, UA: 0.205, FA: 0.185, TORSO: 0.465, SHO: 0.3, SHD: 0.135, HJX: 0.13, HJY: 0.06, WST: 0.06, HEAD: 0.33, EYE: 0.2, GAIT: 0.13, JUMP: 1.75 };
+  var PROP = (function () {
+    var p = { ANK: 0.105, TORSO: 0.465, SHO: 0.3, SHD: 0.135, HJX: 0.13, HJY: 0.06, WST: 0.06, HEAD: 0.33 };
+    for (var k in p) p[k] *= KS;
+    /* limbs: the sculpt's own are 0.081 (thigh, shin), 0.162 (upper arm) and 0.123 (forearm) at this size */
+    p.TH = 0.092; p.SH = 0.092; p.UA = 0.18; p.FA = 0.165;
+    p.HIP = p.ANK + (p.TH + p.SH) * 0.98 + p.HJY + 0.02; p.EYE = 0.2; p.GAIT = 0.14; p.JUMP = 1.75;
+    return p;
+  })();
+  /* eyes (bind space at 1.5 m), the headband bow and the belt knot, which hang off their own sway bones */
+  var EYES = [[-0.092, 1.236, -0.316], [0.092, 1.236, -0.316]], BOW = [-0.37, 1.3, 0.07], KNOT = [0, 0.545, -0.335];
   /* bone order */
-  var PELVIS = 0, CHEST = 1, HEAD = 2, LEG = [3, 6], ARM = [9, 12], N = 15;
+  var PELVIS = 0, CHEST = 1, HEAD = 2, LEG = [3, 6], ARM = [9, 12], BOWB = 15, KNOTB = 16, N = 17;
 
   var THREE, base = null, failed = false, waiting = [];
   /* the paddle hand: the open sculpted hand is rolled into a fist around a handle that runs across the palm.
@@ -53,8 +62,9 @@
       geo.computeBoundingBox(); var bb = geo.boundingBox, k = K / (bb.max.y - bb.min.y);
       geo.translate(0, -bb.min.y, 0); geo.scale(k, k, k);
       gripHand(geo);
-      geo.deleteAttribute("normal"); geo.computeVertexNormals();
       skinWeights(geo);
+      geo.scale(KS, KS, KS);
+      geo.deleteAttribute("normal"); geo.computeVertexNormals();
       base = { geo: geo, armIndex: armOnly(geo), img: src.material.map.image, mats: {} };
       waiting.forEach(function (f) { f(base); }); waiting = [];
     }, undefined, fail);
@@ -67,7 +77,8 @@
     for (var v = 0; v < n; v++) {
       var x = pos.getX(v), y = pos.getY(v), ax = Math.abs(x), side = x < 0 ? 0 : 1;
       acc.fill(0);
-      var head = ss(0.74, 0.83, y), body = 1 - head; acc[HEAD] += head;
+      var z = pos.getZ(v), head = ss(0.74, 0.83, y), body = 1 - head, bw = y > 1.1 ? ss(0.365, 0.43, -x) : 0;
+      acc[HEAD] += head * (1 - bw); acc[BOWB] += head * bw;
       var arm = body * ss(0.29, 0.345, ax) * (y > 0.33 ? 1 : 0), A = ARM[side];
       var fore = ss(0.38, 0.44, ax), hand = ss(0.47, 0.5, ax);
       acc[A] += arm * (1 - fore); acc[A + 1] += arm * fore * (1 - hand); acc[A + 2] += arm * fore * hand;
@@ -77,9 +88,11 @@
         var w = leg * (s ? sR : 1 - sR), L = LEG[s], foot = 1 - ss(0.1, 0.14, y), thigh = ss(0.17, 0.22, y);
         acc[L] += w * thigh * (1 - foot); acc[L + 1] += w * (1 - thigh) * (1 - foot); acc[L + 2] += w * foot;
       });
+      var kw = (ax < 0.11 && y > 0.4 && y < 0.6) ? ss(0.318, 0.345, -z) * (1 - ss(0.53, 0.57, y)) : 0;
+      acc[KNOTB] += trunk * kw; trunk *= 1 - kw;
       var chest = ss(0.4, 0.52, y); acc[CHEST] += trunk * chest; acc[PELVIS] += trunk * (1 - chest);
       /* keep the four largest */
-      var idx = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14].sort(function (a, b) { return acc[b] - acc[a]; }), sum = 0;
+      var idx = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16].sort(function (a, b) { return acc[b] - acc[a]; }), sum = 0;
       for (var j = 0; j < 4; j++) sum += acc[idx[j]];
       for (j = 0; j < 4; j++) { si[v * 4 + j] = idx[j]; sw[v * 4 + j] = sum > 0 ? acc[idx[j]] / sum : (j ? 0 : 1); }
     }
@@ -130,16 +143,17 @@
   var bind = null;
   function bindData() {
     if (bind) return bind;
-    var V3 = THREE.Vector3, v = function (a) { return new V3(a[0], a[1], a[2]); };
+    var V3 = THREE.Vector3, v = function (a) { return new V3(a[0], a[1], a[2]).multiplyScalar(KS); };
     bind = { pos: [], dir: [] };
     bind.pos[PELVIS] = v(B.hipC); bind.pos[CHEST] = v(B.waist); bind.pos[HEAD] = v(B.hd);
     [0, 1].forEach(function (s) {
-      var m = s ? 1 : -1, l = B.leg.map(function (p) { return new V3(p[0] * m, p[1], p[2]); }), a = B.arm.map(function (p) { return new V3(p[0] * m, p[1], p[2]); });
+      var m = s ? 1 : -1, l = B.leg.map(function (p) { return new V3(p[0] * m, p[1], p[2]).multiplyScalar(KS); }), a = B.arm.map(function (p) { return new V3(p[0] * m, p[1], p[2]).multiplyScalar(KS); });
       bind.pos[LEG[s]] = l[0]; bind.pos[LEG[s] + 1] = l[1]; bind.pos[LEG[s] + 2] = l[2];
       bind.dir[LEG[s]] = l[1].clone().sub(l[0]); bind.dir[LEG[s] + 1] = l[2].clone().sub(l[1]);
       bind.pos[ARM[s]] = a[0]; bind.pos[ARM[s] + 1] = a[1]; bind.pos[ARM[s] + 2] = a[2];
       bind.dir[ARM[s]] = a[1].clone().sub(a[0]); bind.dir[ARM[s] + 1] = a[2].clone().sub(a[1]);
     });
+    bind.pos[BOWB] = v(BOW); bind.pos[KNOTB] = v(KNOT);
     bind.len = bind.dir.map(function (d) { return d ? d.length() : 0; });
     bind.unit = bind.dir.map(function (d) { return d ? d.clone().normalize() : null; });
     bind.inv = bind.pos.map(function (p) { return new THREE.Matrix4().makeTranslation(-p.x, -p.y, -p.z); });
@@ -159,12 +173,25 @@
     var main = make(base.geo), armGeo = base.geo.clone(); armGeo.setIndex(base.armIndex);
     var arm = make(armGeo); arm.visible = false;
     rig.body.visible = false; rig.upper.visible = false;
-    rig.setProp(PROP); rig.readyDy = -0.3;
+    rig.setProp(PROP); rig.readyDy = -0.26;
 
     var _q = new Q(), _q2 = new Q(), _d = new V3(), _m = new THREE.Matrix4(), _s = new THREE.Matrix4(), _e = new THREE.Euler(0, 0, 0, "YXZ"), Y = new V3(0, 1, 0);
     var qPel = new Q(), qUp = new Q(), qh = new Q(), _x = new V3(), _y = new V3(), _z = new V3(), _w = new V3();
     var Gp = GRIP, qGripInv = new Q().setFromRotationMatrix(new THREE.Matrix4().makeBasis(new V3().fromArray(Gp.u), new V3().fromArray(Gp.a), new V3(0, 0, 1))).invert();
-    var gripOff = new V3().fromArray(Gp.C).sub(bd.pos[ARM[1] + 2]);
+    var gripOff = new V3().fromArray(Gp.C).multiplyScalar(KS).sub(bd.pos[ARM[1] + 2]);
+    /* eyelids: skin-coloured lids that drop over the painted eyes for a blink, and half-close at contact */
+    var lidC = document.createElement("canvas"); lidC.width = lidC.height = 64;
+    var lx = lidC.getContext("2d"); lx.fillStyle = "#fff"; lx.fillRect(0, 0, 64, 64);
+    lx.strokeStyle = "#3a2a1e"; lx.lineWidth = 5; lx.lineCap = "round"; lx.beginPath(); lx.arc(32, 32, 28.5, 0.12 * Math.PI, 0.88 * Math.PI); lx.stroke();   /* lash line on the lid's edge */
+    var lidT = new THREE.CanvasTexture(lidC); lidT.encoding = THREE.sRGBEncoding;
+    var lidM = new THREE.MeshStandardMaterial({ map: lidT, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4, color: new THREE.Color().setRGB(194 / 255, 177 / 255, 152 / 255).convertSRGBToLinear(), roughness: 0.55 });
+    var lidG = new THREE.CircleGeometry(1, 20); lidG.translate(0, -1, 0);
+    var face = new THREE.Group(); face.matrixAutoUpdate = false; rig.group.add(face);
+    var lids = EYES.map(function (e, i) {
+      var l = new THREE.Mesh(lidG, lidM); l.position.set(e[0] * KS, (e[1] + 0.043) * KS, (e[2] - 0.03) * KS); l.rotation.set(0, Math.PI + (i ? -0.32 : 0.32), 0, "YXZ");
+      l.scale.set(0.032 * KS, 0.001, 1); face.add(l); return l;
+    });
+    var blinkPhase = Math.random() * 4, _hb = new THREE.Matrix4();
     function set(i, pos, q, stretch) {
       var M = bones[i].matrixWorld;
       M.makeRotationFromQuaternion(q);
@@ -187,6 +214,17 @@
       qPel.setFromAxisAngle(Y, J.hipYaw); set(PELVIS, J.hipC, qPel);
       set(CHEST, J.waist, J.chestQ);
       _e.set(J.pitch * 0.45, J.yaw, 0); _q2.setFromEuler(_e); qa.copy(_q2); set(HEAD, J.hd, qa);
+      /* sway: the bow and the knot lag and flutter more the faster the ninja runs */
+      var t = J.t || 0, run = J.run || 0;
+      _e.set(0.12 + 0.45 * run + Math.sin(t * 7.3) * (0.06 + 0.16 * run), Math.sin(t * 5.1) * (0.1 + 0.25 * run), -0.1 * run); _q2.setFromEuler(_e);
+      qb.copy(qa).multiply(_q2); _w.copy(bd.pos[BOWB]).sub(bd.pos[HEAD]).applyQuaternion(qa).add(J.hd); set(BOWB, _w, qb);
+      _e.set(0.08 + 0.55 * run + Math.sin(t * 9.1) * (0.05 + 0.2 * run), 0, Math.sin(t * 6.3) * (0.08 + 0.12 * run)); _q2.setFromEuler(_e);
+      qb.copy(qPel).multiply(_q2); _w.copy(bd.pos[KNOTB]).sub(bd.pos[PELVIS]).applyQuaternion(qPel).add(J.hipC); set(KNOTB, _w, qb);
+      /* lids follow the head bone exactly like the skinned face does */
+      face.matrix.multiplyMatrices(bones[HEAD].matrixWorld, bd.inv[HEAD]); face.matrixWorldNeedsUpdate = true;
+      var now = performance.now() / 1000 + blinkPhase, cyc = now % 3.7, blink = cyc < 0.16 ? Math.sin(cyc / 0.16 * Math.PI) : 0;
+      var squint = 0.5 * ss(0.8, 0.97, J.w || 0), lid = Math.max(blink, squint);
+      lids.forEach(function (l) { l.scale.y = Math.max(0.001, 0.044 * KS * lid); l.visible = lid > 0.02; });
       for (var s = 0; s < 2; s++) {
         var l = J.leg[s], L = LEG[s];
         var k1 = swing(qa, qPel, L, l.hip, l.knee); set(L, l.hip, qa, k1);
@@ -207,7 +245,7 @@
         }
       }
     };
-    rig.onFP = function (on) { main.visible = !on; arm.visible = on; };
+    rig.onFP = function (on) { main.visible = !on; arm.visible = on; face.visible = !on; };
     if (rig.fp) rig.onFP(true);
     return { mesh: main, arm: arm, skeleton: skel };
   }

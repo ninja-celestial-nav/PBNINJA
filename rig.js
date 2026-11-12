@@ -28,14 +28,15 @@
     var white = vinyl(0xffffff, 0.25, 0.6);
     var g = new THREE.Group(); scene.add(g);
     var body = new THREE.Group(), upper = new THREE.Group(); g.add(body); g.add(upper);   /* upper = what first person hides */
-    var sph = new THREE.SphereGeometry(1, 24, 16);
-    function mesh(geo, mat, parent, sx, sy, sz) { var m = new THREE.Mesh(geo, mat); if (sx) m.scale.set(sx, sy, sz); m.castShadow = true; (parent || body).add(m); return m; }
-    function bone(r0, r1, mat, parent) { var geo = new THREE.CylinderGeometry(r1, r0, 1, 14); geo.translate(0, 0.5, 0); return mesh(geo, mat, parent); }
-    function band(m, r, y0, y1, mat) { var geo = new THREE.CylinderGeometry(r, r, y1 - y0, 14); geo.translate(0, (y0 + y1) / 2, 0); var b = new THREE.Mesh(geo, mat); b.castShadow = true; m.add(b); }
+    var sph = null;
+    /* the sculpted ninja (mascot.js) is the body now; these are bare joints the solver positions */
+    function mesh(geo, mat, parent, sx, sy, sz) { var m = new THREE.Object3D(); if (sx) m.scale.set(sx, sy, sz); (parent || body).add(m); return m; }
+    function bone(r0, r1, mat, parent) { return mesh(null, mat, parent); }
+    function band() {}
     function ball(r, mat, parent) { return mesh(sph, mat, parent, r, r, r); }
     var _d = new V3();
     function put(m, A, B) { _d.subVectors(B, A); var len = _d.length() || 1e-6; m.position.copy(A); m.scale.set(1, len, 1); m.quaternion.setFromUnitVectors(UP, _d.multiplyScalar(1 / len)); }
-    function lathe(pts, sz) { var geo = new THREE.LatheGeometry(pts.map(function (p) { return new THREE.Vector2(p[0], p[1]); }), 24); geo.scale(1, 1, sz); return geo; }
+    function lathe() { return null; }
 
     /* round, soft, slightly clueless: big hooded head, bean body, stubby limbs, mitten hands */
     var blush = vinyl(0xff9d8a, 0.8, 0);
@@ -185,7 +186,7 @@
       tag.position.set(hd.x, hd.y + 0.5, hd.z);
       rig.eye.copy(hd).addScaledVector(UP, EYE);
       J.padQ.copy(p.pQ); J.hipC.copy(hipC); J.hipYaw = hipYaw; J.waist.copy(waist); J.chestQ.copy(chest.quaternion); J.hd.copy(hd);
-      J.pitch = head.rotation.x; J.yaw = head.rotation.y; J.fwdHip.copy(hbz.f); J.fwdChest.copy(cb.f);
+      J.t = p.t; J.run = k; J.w = w; J.pitch = head.rotation.x; J.yaw = head.rotation.y; J.fwdHip.copy(hbz.f); J.fwdChest.copy(cb.f);
       if (rig.onUpdate) rig.onUpdate(J);
       return rig;
     };

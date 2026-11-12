@@ -219,7 +219,18 @@
     /* overgrip seam: an elliptical helix */
     var hp = []; for (var j = 0; j <= 220; j++) { var u = j / 220, a2 = u * Math.PI * 2 * 5.2; hp.push(new V3(Math.cos(a2) * 0.0181, -0.152 - u * 0.118, Math.sin(a2) * 0.0181 * 0.8)); }
     g.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(hp), 400, 0.0011, 5, false), new THREE.MeshStandardMaterial({ color: col(0x6c6e68), roughness: 0.9 })));
-    var tape = new THREE.Mesh(new THREE.CylinderGeometry(0.0186, 0.0186, 0.008, 8), new THREE.MeshStandardMaterial({ color: col(0xE4F23F), roughness: 0.6 })); tape.scale.z = 0.8; tape.rotation.y = Math.PI / 8; tape.position.y = -0.152; g.add(tape);
+    /* collar tape printed NINJA all the way round, and a shuriken on the butt cap */
+    var tapeT = canvasTex(512, 48, function (c) {
+      c.fillStyle = "#E4F23F"; c.fillRect(0, 0, 512, 48); c.fillStyle = "#0b1e3b"; c.font = "800 34px 'Big Shoulders Display','Arial Narrow',sans-serif"; c.textAlign = "center"; c.textBaseline = "middle";
+      for (var q = 0; q < 4; q++) c.fillText("NINJA", 64 + q * 128, 26);
+    });
+    var tape = new THREE.Mesh(new THREE.CylinderGeometry(0.0187, 0.0187, 0.014, 16, 1, true), new THREE.MeshStandardMaterial({ map: tapeT, roughness: 0.6 })); tape.scale.z = 0.8; tape.position.y = -0.155; g.add(tape);
+    var capT = canvasTex(128, 128, function (c) {
+      c.fillStyle = "#2e302d"; c.fillRect(0, 0, 128, 128); c.translate(64, 64); c.fillStyle = "#E4F23F"; c.beginPath();
+      for (var q = 0; q < 8; q++) { var a4 = q * Math.PI / 4 - Math.PI / 2, r4 = q % 2 ? 13 : 46; c.lineTo(Math.cos(a4) * r4, Math.sin(a4) * r4); }
+      c.closePath(); c.moveTo(7, 0); c.arc(0, 0, 7, 0, 7, true); c.fill("evenodd");
+    });
+    var capEnd = new THREE.Mesh(new THREE.CircleGeometry(0.0165, 24), new THREE.MeshStandardMaterial({ map: capT, roughness: 0.5 })); capEnd.rotation.x = Math.PI / 2; capEnd.scale.y = 0.8; capEnd.position.y = -0.2868; g.add(capEnd);
     var cap = new THREE.Mesh(new THREE.LatheGeometry([[0.0001, -0.2865], [0.017, -0.2862], [0.0215, -0.282], [0.0205, -0.277], [0.0176, -0.274]].map(function (p) { return new THREE.Vector2(p[0], p[1]); }), 16), darkM);
     cap.scale.z = 0.8; cap.castShadow = true; g.add(cap);
     if (withArrow) {
@@ -232,18 +243,16 @@
   function rigOf(cloth, shadeC, accent, arrow) { return NinjaRig.create(THREE, scene, { col: col, cloth: cloth, shade: shadeC, accent: accent, paddle: makePaddle(arrow) }); }
   var A = { you: rigOf(0x1c2a47, 0x101a30, 0xE4F23F, true), partner: rigOf(0xe9eef5, 0xb9c4d4, 0xE4F23F), o1: rigOf(0xd9472f, 0x8f2a1a, 0x0b1e3b), o2: rigOf(0xd9472f, 0x8f2a1a, 0x0b1e3b) };
   var racket = A.you.paddle;
+  function arrowSize(w) { var a = racket.userData.arrow; if (a) a.scale.setScalar((0.35 + 0.65 * w) * (S.view === "fp" ? 0.6 : 1)); }
   /* the sculpted ninja (TRELLIS mesh, skinned in mascot.js) takes over from the procedural one once the model has
-     loaded; ?ninja=classic keeps the procedural ninjas */
-  var mascotGate = null;
-  if (window.NinjaMascot && THREE.GLTFLoader && !/[?&]ninja=classic\b/.test(location.search)) {
-    mascotGate = new Promise(function (ok) {
-      setTimeout(ok, 9000);                              /* slow network: open with the procedural ninjas, swap later */
-      NinjaMascot.load(THREE, function (m) {
-        if (m) { NinjaMascot.attach(A.you, "you"); NinjaMascot.attach(A.partner, "partner"); NinjaMascot.attach(A.o1, "opp"); NinjaMascot.attach(A.o2, "opp"); if (TL) update(0); wake(); }
-        ok();
-      });
+     loaded */
+  var mascotGate = null;   /* the cover stays up until the ninjas have loaded */
+  mascotGate = new Promise(function (ok) {
+    NinjaMascot.load(THREE, function (m) {
+      if (m) { NinjaMascot.attach(A.you, "you"); NinjaMascot.attach(A.partner, "partner"); NinjaMascot.attach(A.o1, "opp"); NinjaMascot.attach(A.o2, "opp"); if (TL) update(0); wake(); ok(); }
+      else { var l = $("#loading span"); if (l) l.textContent = "角色載入失敗，請重新整理頁面"; }
     });
-  }
+  });
   /* soft contact shadow under every ninja so their feet sit on the court */
   var contactT = canvasTex(128, 128, function (g) { var r = g.createRadialGradient(64, 64, 4, 64, 64, 64); r.addColorStop(0, "rgba(0,8,24,.55)"); r.addColorStop(0.55, "rgba(0,8,24,.22)"); r.addColorStop(1, "rgba(0,8,24,0)"); g.fillStyle = r; g.fillRect(0, 0, 128, 128); });
   IDS.forEach(function (id) { var m = plane(0.95, 0.95, new THREE.MeshBasicMaterial({ map: contactT, transparent: true, depthWrite: false, toneMapped: false })); m.rotation.x = -Math.PI / 2; m.renderOrder = 1; scene.add(m); A[id].contact = m; });
@@ -486,6 +495,7 @@
       var first = TL.ah[id][0], hold = !!first && first.key === "serve" && t < first.t - 0.1;
       fig.update({ root: new V3(st.x, 0, st.z), yaw: st.yaw, vel: st.vel, gait: st.gait, t: t, hand: pose.pos.clone().add(new V3(0, -0.25, 0).applyQuaternion(pose.q)), pPos: pose.pos, pQ: pose.q,
         w: pose.w, bh: !!(pose.hit && pose.hit.bh), ball: bp, hold: hold, hop: hop * (1 - pose.w), split: split * (1 - pose.w) });
+      if (id === "you") arrowSize(pose.w);
       fig.contact.position.set(st.x, 0.011, st.z); fig.contact.visible = fig.group.visible && !(id === "you" && S.view === "fp");
       if (id === "you") { ys = st; rp = pose; }
     });
