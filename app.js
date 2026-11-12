@@ -135,25 +135,60 @@
 
   /* ---------- actors: jointed ninjas (rig.js) and their paddles ---------- */
   function makePaddle(withArrow) {
-    /* matte grey paddle with a tapered throat and a long wrapped grip. Long axis +Y, face normal +Z, origin at the sweet spot. */
-    var g = new THREE.Group();
-    var faceM = new THREE.MeshStandardMaterial({ color: col(0x6f6f66), roughness: 0.85, metalness: 0.05 });
-    var edge = new THREE.MeshStandardMaterial({ color: col(0x4a4b45), roughness: 0.6, metalness: 0.1 });
-    var gripM = new THREE.MeshStandardMaterial({ color: col(0x8a8b84), roughness: 0.9 });
-    var w = 0.096, top = 0.14, r = 0.05, sh = new THREE.Shape();
-    sh.moveTo(-w + r, top); sh.lineTo(w - r, top); sh.quadraticCurveTo(w, top, w, top - r); sh.lineTo(w, -0.03);
-    sh.bezierCurveTo(w, -0.1, 0.03, -0.12, 0.022, -0.165); sh.lineTo(-0.022, -0.165); sh.bezierCurveTo(-0.03, -0.12, -w, -0.1, -w, -0.03); sh.lineTo(-w, top - r); sh.quadraticCurveTo(-w, top, -w + r, top);
-    var hg = new THREE.ExtrudeGeometry(sh, { depth: 0.014, bevelEnabled: true, bevelThickness: 0.002, bevelSize: 0.002, bevelSegments: 1, curveSegments: 18 }); hg.translate(0, 0, -0.007);
-    var head = new THREE.Mesh(hg, [faceM, edge]); head.castShadow = true; g.add(head);
-    var faceT = canvasTex(256, 352, function (c) {
-      c.fillStyle = "#6f6f66"; c.fillRect(0, 0, 256, 352);
-      for (var i = 0; i < 2600; i++) { c.fillStyle = Math.random() < 0.5 ? "rgba(255,255,255,.05)" : "rgba(0,0,0,.07)"; c.fillRect(Math.random() * 256, Math.random() * 352, 1.5, 1.5); }
-      c.fillStyle = "#E4F23F"; c.font = "900 30px 'Big Shoulders Display','Arial Narrow',sans-serif"; c.textAlign = "center"; c.fillText("NINJAPB", 128, 300);
+    /* elongated 16 mm paddle: raw-carbon graphite face, raised edge guard, tapered throat, octagonal handle with a
+       spiral-wrapped overgrip and flared butt cap. Long axis +Y, face normal +Z, origin at the sweet spot.
+       Size: 19 cm wide, 42.5 cm long, 13 cm handle. The hand holds it 25 cm below the origin. */
+    var g = new THREE.Group(), W = 0.095, TOP = 0.155, R = 0.05, TH = 0.008;
+    var sh = new THREE.Shape();
+    sh.moveTo(-W + R, TOP); sh.lineTo(W - R, TOP); sh.quadraticCurveTo(W, TOP, W, TOP - R); sh.lineTo(0.09, -0.07);
+    sh.bezierCurveTo(0.088, -0.118, 0.032, -0.112, 0.021, -0.14); sh.lineTo(-0.021, -0.14);
+    sh.bezierCurveTo(-0.032, -0.112, -0.088, -0.118, -0.09, -0.07); sh.lineTo(-W, TOP - R); sh.quadraticCurveTo(-W, TOP, -W + R, TOP);
+    function tracePath(c, k, ox, oy, inset) {           /* the outline drawn into a canvas, shrunk by inset metres */
+      var pts = sh.getPoints(40), cx = 0, cy = 0.01; c.beginPath();
+      pts.forEach(function (p, i) { var dx = p.x - cx, dy = p.y - cy, l = Math.hypot(dx, dy) || 1, x = p.x - dx / l * inset, y = p.y - dy / l * inset; var X = ox + x * k, Y = oy - y * k; if (i) c.lineTo(X, Y); else c.moveTo(X, Y); });
+      c.closePath();
+    }
+    /* face: a fine twill weave with a lime pinstripe set inside the guard */
+    var TW = 512, TH2 = Math.round(TW * 0.295 / 0.19), K = TW / 0.19;
+    var faceT = canvasTex(TW, TH2, function (c) {
+      c.fillStyle = "#575a55"; c.fillRect(0, 0, TW, TH2);
+      for (var y = 0; y < TH2; y += 4) for (var x = 0; x < TW; x += 4) {
+        var on = ((x >> 2) + (y >> 2)) % 4 < 2; c.fillStyle = on ? "rgba(255,255,255,.055)" : "rgba(0,0,0,.08)"; c.fillRect(x, y, 4, 4);
+      }
+      for (var i = 0; i < 4000; i++) { c.fillStyle = Math.random() < 0.5 ? "rgba(255,255,255,.035)" : "rgba(0,0,0,.05)"; c.fillRect(Math.random() * TW, Math.random() * TH2, 1, 1); }
+      var ox = TW / 2, oy = TOP * K;
+      c.strokeStyle = "rgba(20,22,20,.35)"; c.lineWidth = 10; tracePath(c, K, ox, oy, 0.006); c.stroke();
+      c.strokeStyle = "#cfe04a"; c.lineWidth = 2.2; tracePath(c, K, ox, oy, 0.014); c.stroke();
     });
-    [1, -1].forEach(function (s) { var d = plane(0.15, 0.206, new THREE.MeshStandardMaterial({ map: faceT, roughness: 0.85 })); d.position.set(0, 0.03, 0.0096 * s); if (s < 0) d.rotation.y = Math.PI; g.add(d); });
-    var grip = new THREE.Mesh(new THREE.CylinderGeometry(0.0165, 0.018, 0.15, 14), gripM); grip.position.y = -0.24; grip.castShadow = true; g.add(grip);
-    for (var k = 0; k < 5; k++) { var ring = new THREE.Mesh(new THREE.TorusGeometry(0.0175, 0.0022, 6, 14), edge); ring.rotation.x = Math.PI / 2 + 0.35; ring.position.y = -0.18 - k * 0.028; g.add(ring); }
-    var cap = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.022, 0.012, 14), edge); cap.position.y = -0.32; g.add(cap);
+    faceT.repeat.set(1 / 0.19, 1 / 0.295); faceT.offset.set(0.5, 0.14 / 0.295); faceT.anisotropy = 8;
+    var faceM = new THREE.MeshPhysicalMaterial({ map: faceT, roughness: 0.62, metalness: 0.05, clearcoat: 0.25, clearcoatRoughness: 0.5 });
+    var guardM = new THREE.MeshStandardMaterial({ color: col(0x3c3e3a), roughness: 0.45, metalness: 0.15 });
+    var hg = new THREE.ExtrudeGeometry(sh, { depth: TH * 2 - 0.002, bevelEnabled: true, bevelThickness: 0.001, bevelSize: 0.001, bevelSegments: 1, curveSegments: 24 }); hg.translate(0, 0, -TH + 0.001);
+    var head = new THREE.Mesh(hg, [faceM, guardM]); head.castShadow = true; g.add(head);
+    /* edge guard: a rounded rim from throat to throat over the top */
+    var op = sh.getPoints(60).filter(function (p) { return p.y > -0.138; });
+    var start = 0, gap = 0; op.forEach(function (p, i) { var d = p.distanceTo(op[(i + op.length - 1) % op.length]); if (d > gap) { gap = d; start = i; } });
+    var ring = start > 0 ? op.slice(start).concat(op.slice(0, start)) : op;
+    var gc = new THREE.CatmullRomCurve3(ring.map(function (p) { return new V3(p.x, p.y, 0); }));
+    var guard = new THREE.Mesh(new THREE.TubeGeometry(gc, 160, TH + 0.0012, 8, false), guardM); guard.scale.set(1, 1, 1); guard.castShadow = true; g.add(guard);
+    /* wordmark on both faces */
+    var wm = canvasTex(256, 64, function (c) { c.clearRect(0, 0, 256, 64); c.fillStyle = "#E4F23F"; c.font = "900 44px 'Big Shoulders Display','Arial Narrow',sans-serif"; c.textAlign = "center"; c.fillText("NINJAPB", 128, 48); });
+    [1, -1].forEach(function (s) { var d = plane(0.09, 0.0225, new THREE.MeshStandardMaterial({ map: wm, transparent: true, roughness: 0.6, depthWrite: false })); d.position.set(0, -0.085, (TH + 0.0003) * s); if (s < 0) d.rotation.y = Math.PI; g.add(d); });
+    /* throat collar and handle (flattened octagon) */
+    var gripT = canvasTex(64, 256, function (c) {
+      c.fillStyle = "#8f918a"; c.fillRect(0, 0, 64, 256);
+      for (var i = 0; i < 700; i++) { c.fillStyle = "rgba(40,42,40,.35)"; c.beginPath(); c.arc(Math.random() * 64, Math.random() * 256, 0.9, 0, 7); c.fill(); }
+    });
+    gripT.wrapS = gripT.wrapT = THREE.RepeatWrapping; gripT.repeat.set(1, 1);
+    var gripM = new THREE.MeshStandardMaterial({ map: gripT, roughness: 0.92 }), darkM = new THREE.MeshStandardMaterial({ color: col(0x2e302d), roughness: 0.5, metalness: 0.2 });
+    var collar = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.0185, 0.028, 8), darkM); collar.scale.z = 0.62; collar.position.y = -0.138; collar.rotation.y = Math.PI / 8; g.add(collar);
+    var handle = new THREE.Mesh(new THREE.CylinderGeometry(0.0172, 0.0176, 0.128, 8, 1), gripM); handle.scale.z = 0.8; handle.position.y = -0.214; handle.rotation.y = Math.PI / 8; handle.castShadow = true; g.add(handle);
+    /* overgrip seam: an elliptical helix */
+    var hp = []; for (var j = 0; j <= 220; j++) { var u = j / 220, a2 = u * Math.PI * 2 * 5.2; hp.push(new V3(Math.cos(a2) * 0.0181, -0.152 - u * 0.118, Math.sin(a2) * 0.0181 * 0.8)); }
+    g.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(hp), 400, 0.0011, 5, false), new THREE.MeshStandardMaterial({ color: col(0x6c6e68), roughness: 0.9 })));
+    var tape = new THREE.Mesh(new THREE.CylinderGeometry(0.0186, 0.0186, 0.008, 8), new THREE.MeshStandardMaterial({ color: col(0xE4F23F), roughness: 0.6 })); tape.scale.z = 0.8; tape.rotation.y = Math.PI / 8; tape.position.y = -0.152; g.add(tape);
+    var cap = new THREE.Mesh(new THREE.LatheGeometry([[0.0001, -0.2865], [0.017, -0.2862], [0.0215, -0.282], [0.0205, -0.277], [0.0176, -0.274]].map(function (p) { return new THREE.Vector2(p[0], p[1]); }), 16), darkM);
+    cap.scale.z = 0.8; cap.castShadow = true; g.add(cap);
     if (withArrow) {
       var arrow = new THREE.ArrowHelper(new V3(0, 0, 1), new V3(0, 0, 0.012), 0.42, 0xE4F23F, 0.12, 0.07);
       arrow.line.material.toneMapped = false; arrow.cone.material = new THREE.MeshBasicMaterial({ color: col(0xE4F23F) }); arrow.line.material.color = col(0xE4F23F); g.add(arrow); g.userData.arrow = arrow;
