@@ -135,7 +135,7 @@
     { no: "02", title: "第 1 拍 發球", en: "Shot 1 · The Serve",
       key: "深壓底線，鎖死對手進攻。",
       pts: ["黃金法則：深度 80% ＞ 旋轉 15% ＞ 速度 5%。", "合法三要素：肚臍以下觸球、拍頭低於手腕、由下往上揮拍。", "轉髖刷上旋：拋球前伸 1 呎，下肢轉髖帶動肩膀，拍面微閉 10°–15° 刷上旋。", "底線煞停：發球後立即在底線後 Split-Step 煞停（守雙彈跳原則，禁衝場內）。"],
-      vids: [["Briones Pickleball", "現代重上旋深發球力學：下肢轉髖發力與底線深區壓迫軌跡"], ["John Cincola", "五步驟機械化穩定發球：消除手腕翻甩、100% 合法穩定動力鏈"]],
+      vids: [["Briones Pickleball", "現代重上旋深發球力學：下肢轉髖發力與底線深區壓迫軌跡", "https://www.youtube.com/watch?v=L0tXZgYI2R0"], ["John Cincola", "五步驟機械化穩定發球：消除手腕翻甩、100% 合法穩定動力鏈", "https://www.youtube.com/watch?v=HVI7TJ4_cYk"]],
       v: [
         { id: "deep", label: "GO 打深球", light: "go", lt: "常規首選｜打深球（底線前 2–3 呎）", when: "所有常規發球回合。", why: "把對手釘在底線深處，拉長其上網距離並削弱第 2 拍回球威脅。",
           you: [0.75, 7.4], partner: [-1.6, 7.2], o1: [-1.35, -7.7], o2: [1.5, -2.5], tags: { o1: "接球者" },
@@ -167,7 +167,7 @@
     { no: "03", title: "第 2 拍 接發球", en: "Shot 2 · Return of Serve",
       key: "高深弧線換時間，100% 搶佔廚房線。唯一目標是安全護送自己與搭檔站穩廚房線，絕非拼一拍得分。",
       pts: ["0.2 秒預判墊步：在對手觸球前 0.2 秒完成 Split-Step 雙腳墊步，徹底消除啟動延遲。", "鎖腕平穩推擊：拍面微開（5°–10°）、固定手腕，以肩膀推高過網 3 呎以上之安全防護弧度。", "隨球衝刺煞停（Return & Rush）：擊球後立即前衝，在對手打第 3 拍前於廚房線前 0.5 步雙腳踩煞停步。"],
-      vids: [["ThatPickleballGuy", "高深接發球換取 2 秒上網策略：以高度與深度爭取跑位時間、避免短球被抓腳底"], ["PlayPickleball", "完美接發球站位與隨球搶網步伐：Split-Step 預判啟動、固定手腕推擊與第一時間衝刺就位"]],
+      vids: [["ThatPickleballGuy", "高深接發球換取 2 秒上網策略：以高度與深度爭取跑位時間、避免短球被抓腳底", "https://www.youtube.com/watch?v=OJYWUYMfVxI"], ["PlayPickleball", "完美接發球站位與隨球搶網步伐：Split-Step 預判啟動、固定手腕推擊與第一時間衝刺就位", "https://www.youtube.com/watch?v=OxNnewWzUC4"]],
       v: [
         { id: "deep", label: "GO 高且深", light: "go", lt: "為何選「高且深（High & Deep）」慢速長球？", when: "面對對手深發球或強勁發球時。", why: "為自身爭取 1.5–2.0 秒充足滯空時間從容上廚房線；若打平快短球會壓縮自己上網時間，在半途被抓腳底。",
           you: [1.25, 7.8], partner: [-1.5, 2.55], o1: [-0.85, -7.3], o2: [1.6, -7.2], tags: { o1: "發球者" },
@@ -218,7 +218,7 @@
     { no: "04", title: "第 3 拍 抽球 vs. 吊球", en: "Shot 3 · Drive vs. Drop",
       key: "抽球不是賭一拍得分，而是「逼對手冒高、為第 5 拍鋪路的過渡武器」。",
       pts: ["沉拍頭刷上旋：短引拍、拍頭低於手腕 4 吋，轉髖由低向高刷出強烈上旋。", "貼網急沉軌跡：過網高度控制在 1 呎內，靠上旋急墜至對手膝蓋以下。", "抽球後前壓：收拍短促，擊球後立即前壓至中場過渡區踩煞，銜接第 5 拍。", "紅燈改吊球：失衡強抽易掛網或出界，改打頂點在己方半場的軟吊球。"],
-      vids: [["Briones Pickleball", "現代低平急沉上旋抽球力學：沉拍頭 4 吋與轉髖刷球，使球過網急速下墜至膝蓋以下"], ["James Ignatowich", "第 3 拍抽球 vs. 吊球實戰決策：何時果斷強抽（Drive）、何時軟吊（Drop）"]],
+      vids: [["Briones Pickleball", "現代低平急沉上旋抽球力學：沉拍頭 4 吋與轉髖刷球，使球過網急速下墜至膝蓋以下", "https://www.youtube.com/watch?v=QV7yNiKFAko"], ["James Ignatowich", "第 3 拍抽球 vs. 吊球實戰決策：何時果斷強抽（Drive）、何時軟吊（Drop）", "https://www.youtube.com/watch?v=fChyVI3bNvU"]],
       v: [
         { id: "drive", label: "GO 抽球 Drive", light: "go", lt: "綠燈｜選「抽球 (Drive)」", when: "對手接發偏淺／偏高；或對手仍在跑動上網未站穩。", why: "距離近、下壓角度大，成功率最高。快球抓腳底逼出肉包球，自己輕鬆打第 5 拍 Drop。",
           you: [0.9, 7.3], partner: [-1.6, 7.2], o1: [-1.35, -7.75], o2: [1.5, -2.5], tags: { o1: "接球者" },
@@ -263,7 +263,7 @@
     { no: "05", title: "第 4 拍 Punch / Roll / Flick", en: "Shot 4 · Punch / Roll / Flick",
       key: "守住廚房，封鎖推進。依來球高度、旋轉與對手推進狀態，三維動態決策封鎖中前場。",
       pts: ["Punch 拳擊推截擊：拍置胸前 10–11 點鐘不拉拍，鎖死手腕向前短促刺拳頂出 6 吋。", "Roll 上旋滾截擊：拍面微扣 10°–15°、手肘在身前，前臂內旋（Pronation）由下往上滾刷。", "Flick 手腕快挑突擊：維持常規 Dink 隱蔽姿勢，觸球瞬間手指抓緊握把（Finger Squeeze）微甩手腕。", "低於網帶過多：紅燈禁挑。"],
-      vids: [["Selkirk TV", "Punch vs. Roll Volley 高度判斷與分流：網前平推截擊與上旋滾截之關鍵高度判斷"], ["Zane Navratil", "網前 Roll、Poke 與 Flick 完整拆解：動作拆解與選擇時機"]],
+      vids: [["Selkirk TV", "Punch vs. Roll Volley 高度判斷與分流：網前平推截擊與上旋滾截之關鍵高度判斷", "https://www.youtube.com/watch?v=WoHctpTPaEY"], ["Zane Navratil", "網前 Roll、Poke 與 Flick 完整拆解：動作拆解與選擇時機", "https://www.youtube.com/watch?v=Do1JmLvTalo"]],
       v: [
         { id: "punch", label: "Punch 拳擊推截擊", light: "go", lt: "Punch Volley 拳擊推截擊", when: "來球高於網帶，或迎擊對手第 3 拍強抽（Drive）。", why: "反應時間僅 0.3 秒，短刺拳最穩，直接借力把球深壓回對手底線／腳邊。",
           you: [1.15, 2.55], partner: [-1.4, 2.55], o1: [-1.0, -6.95], o2: [1.6, -7.0],
@@ -310,7 +310,7 @@
     { no: "06", title: "第 5 拍 Reset vs. 長丁克", en: "Shot 5 · Reset or Aggressive Dink",
       key: "化被動為主動，奪取網前控制權。",
       pts: ["五拍架構：過渡區軟手卸力進廚房；站穩廚房推對角長丁克造殺機。", "Reset：雙腳「Split & Freeze」煞停凍結，握力降至 2–3/10（海綿手感），拍面微開 45° 不揮拍，靠手肘避震把球輕卸入廚房。", "長丁克：膝蓋彎曲使重心低於網高，手腕鎖死、以肩膀為大擺鐘將球平推向對角線大角度或對手腳邊（拋物線頂點務必在己方半場）。"],
-      vids: [["Tanner Pickleball", "過渡區 Split & Freeze 軟手重置秘訣：雙腳煞停凍結、2–3/10 握力卸力進廚房"], ["Tanner Pickleball", "2026 必備四大丁克球與長丁克壓迫：對角線大角度空間拉扯"]],
+      vids: [["Tanner Pickleball", "過渡區 Split & Freeze 軟手重置秘訣：雙腳煞停凍結、2–3/10 握力卸力進廚房", "https://www.youtube.com/watch?v=0n1acvfRFgo"], ["Tanner Pickleball", "2026 必備四大丁克球與長丁克壓迫：對角線大角度空間拉扯", "https://www.youtube.com/watch?v=-uAVYjiStZ8"]],
       v: [
         { id: "reset", label: "Reset 軟手重置", light: "go", lt: "Reset 過渡區軟手重置（受壓防守）", when: "人還卡在中場過渡區（無人區），且對手第 4 拍強勢截擊下壓至腳邊時。", why: "低於膝蓋硬抽 90% 掛網或彈高被殺！軟手卸入廚房能強迫對手彎腰向上提球、中斷其攻勢，為自己爭取最後兩步安全踏上廚房線。",
           you: [1.1, 4.5], partner: [-1.4, 4.6], o1: [-0.6, -2.65], o2: [1.5, -2.5],
@@ -357,7 +357,7 @@
     gear: { title: "Six Zero 官方球拍專屬優惠", sub: "澳洲頂級球拍：出色停球滯空感（Dwell Time）與減震大甜區，大幅提升第 3 拍 Drop 與第 5 拍 Reset 成功率。",
       paddles: [["Double Black Diamond (DBD)", "日本 Toray 生碳纖維", "極致手感回饋與軟手 Reset 首選，全能型選手的頂級標竿戰拍。", "第 5 拍 Reset"], ["Ruby Pro", "100% 杜邦 Kevlar 芳綸纖維面板", "提供極限咬球旋轉與超高耐磨度，是第 3 拍抽球（Drive）與上旋滾截擊（Roll）的進攻神器。", "第 3 拍 Drive ・ 第 4 拍 Roll"], ["Coral Pro / Infinity 系列", "熱壓一體成型製程", "結合周邊高密度減震發泡，全面擴大防守容錯甜區並賦予網前反擊爆炸力。", "第 4 拍 網前反擊"]],
       code: "NINJA", deal: "結帳輸入專屬折扣碼 NINJA，即享全品項 9 折。官方授權認證合作夥伴 · 正品保障 · 享原廠完整保固。" },
-    links: [["預約課程", "ninjapb.vercel.app", "https://ninjapb.vercel.app"], ["官方 IG", "@ninjapbtw", "https://www.instagram.com/ninjapbtw"], ["Six Zero 官方商城", "sixzeropickleball.com", "https://sixzeropickleball.com"]]
+    links: [["預約課程", "ninjapb.vercel.app", "https://ninjapb.vercel.app"], ["官方 IG", "@ninjapbtw", "https://www.instagram.com/ninjapbtw/"], ["Six Zero 官方商城", "sixzeropickleball.com", "https://www.sixzeropickleball.com?sca_ref=11914723.sbiWIzNDK28ii"]]
   };
 
   root.NINJAPB = { CH: CH, SWINGS: SWINGS, INFO: INFO, DIM: { BL: BL, KL: KL, HW: HW } };

@@ -494,7 +494,7 @@
       lb.hidden = !cv.light;
       if (cv.light) { lb.dataset.light = cv.light; $("#ltTag").textContent = { go: "GO", alt: "ALT", stop: "STOP" }[cv.light]; $("#ltTitle").textContent = cv.lt; $("#ltWhen").textContent = cv.when; $("#ltWhy").textContent = cv.why; }
       var vb = $("#vidBox"); vb.hidden = !ch.vids;
-      if (ch.vids) $("#vids").innerHTML = ch.vids.map(function (x) { return "<li><b>" + x[0] + "</b>" + x[1] + "</li>"; }).join("");
+      if (ch.vids) $("#vids").innerHTML = ch.vids.map(function (x) { var t = "<b>" + x[0] + "</b>" + x[1]; return "<li>" + (x[2] ? '<a href="' + x[2] + '" target="_blank" rel="noopener">' + t + "<em>▶ 在 YouTube 觀看</em></a>" : t) + "</li>"; }).join("");
       press($("#views"), S.view); press($("#speeds"), S.speed);
       elScrub.min = -0.6; elScrub.max = TL.dur.toFixed(2); elScrub.step = 0.01;
       elPlay.textContent = S.playing ? "暫停" : (S.t >= TL.dur - 0.01 ? "重播" : "播放");

@@ -217,6 +217,9 @@ body{overflow-x:hidden}
 .vids{list-style:none;margin:0;padding:0;display:grid;gap:8px;font-size:14px;line-height:1.6;color:var(--mute)}
 .vids::before{content:"權威影音";font-family:var(--display);font-weight:800;letter-spacing:.14em;font-size:13px;color:var(--ball)}
 .vids b{display:block;color:var(--line)}
+.vids a{display:block;color:inherit;text-decoration:none;border:1px solid var(--rule);padding:9px 12px;transition:border-color .2s,background .2s}
+.vids a:hover,.vids a:focus-visible{border-color:var(--ball);background:rgba(228,242,63,.06)}
+.vids em{display:block;font-style:normal;font-weight:700;font-size:12.5px;color:var(--ball);margin-top:3px}
 .readout.light{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:start;--lamp:var(--go);min-height:6.5em}
 .readout.light[data-light="alt"]{--lamp:var(--alt)}.readout.light[data-light="stop"]{--lamp:var(--danger)}
 .readout.light b{color:var(--lamp)}
@@ -320,7 +323,7 @@ body{overflow-x:hidden}
         <li class="full"><span class="k">精解力學 2</span><span><strong>轉髖刷上旋</strong>　拋球前伸 1 呎，下肢轉髖帶動肩膀，拍面微閉 10°–15° 刷上旋。</span></li>
         <li class="full"><span class="k">精解力學 3</span><span><strong>底線煞停</strong>　發球後立即在底線後 Split-Step 煞停（守雙彈跳原則，禁衝場內）。</span></li>
       </ul>
-      <ul class="vids"><li><b>Briones Pickleball</b>現代重上旋深發球力學：下肢轉髖發力與底線深區壓迫軌跡</li><li><b>John Cincola</b>五步驟機械化穩定發球：消除手腕翻甩、100% 合法穩定動力鏈</li></ul>
+      <ul class="vids"><li><a href="https://www.youtube.com/watch?v=L0tXZgYI2R0" target="_blank" rel="noopener"><b>Briones Pickleball</b>現代重上旋深發球力學：下肢轉髖發力與底線深區壓迫軌跡<em>▶ 在 YouTube 觀看</em></a></li><li><a href="https://www.youtube.com/watch?v=HVI7TJ4_cYk" target="_blank" rel="noopener"><b>John Cincola</b>五步驟機械化穩定發球：消除手腕翻甩、100% 合法穩定動力鏈<em>▶ 在 YouTube 觀看</em></a></li></ul>
     </div>
     <div class="board">
       <div class="board-top"><span class="board-title">決策紅綠燈 · 選落點</span>
@@ -342,7 +345,7 @@ body{overflow-x:hidden}
         <li class="full"><span class="k">精解力學 3</span><span><strong>隨球衝刺煞停 (Return &amp; Rush)</strong>　擊球後立即前衝，在對手打第 3 拍前於廚房線前 0.5 步雙腳踩煞停步。</span></li>
       </ul>
       <div class="stats"><div><small>滯空時間</small><strong>1.5–2.0 秒</strong></div><div><small>過網高度</small><strong>3 呎以上</strong></div><div><small>煞停位置</small><strong>廚房線前 0.5 步</strong></div></div>
-      <ul class="vids"><li><b>ThatPickleballGuy</b>高深接發球換取 2 秒上網策略：避免短球被抓腳底</li><li><b>PlayPickleball</b>完美接發球站位與隨球搶網步伐</li></ul>
+      <ul class="vids"><li><a href="https://www.youtube.com/watch?v=OJYWUYMfVxI" target="_blank" rel="noopener"><b>ThatPickleballGuy</b>高深接發球換取 2 秒上網策略：避免短球被抓腳底<em>▶ 在 YouTube 觀看</em></a></li><li><a href="https://www.youtube.com/watch?v=OxNnewWzUC4" target="_blank" rel="noopener"><b>PlayPickleball</b>完美接發球站位與隨球搶網步伐<em>▶ 在 YouTube 觀看</em></a></li></ul>
     </div>
     <div class="board">
       <div class="board-top"><span class="board-title">決策紅綠燈 · 你是接球方（下方）</span></div>
@@ -363,7 +366,7 @@ body{overflow-x:hidden}
         <li><strong>貼網急沉軌跡</strong><span>過網高度控制在 1 呎內，靠上旋急墜至對手膝蓋以下。</span></li>
         <li><strong>抽球後前壓</strong><span>收拍短促，擊球後立即前壓至中場過渡區踩煞，銜接第 5 拍。</span></li>
       </ul>
-      <ul class="vids"><li><b>Briones Pickleball</b>現代低平急沉上旋抽球力學</li><li><b>James Ignatowich</b>第 3 拍抽球 vs. 吊球實戰決策</li></ul>
+      <ul class="vids"><li><a href="https://www.youtube.com/watch?v=QV7yNiKFAko" target="_blank" rel="noopener"><b>Briones Pickleball</b>現代低平急沉上旋抽球力學<em>▶ 在 YouTube 觀看</em></a></li><li><a href="https://www.youtube.com/watch?v=fChyVI3bNvU" target="_blank" rel="noopener"><b>James Ignatowich</b>第 3 拍抽球 vs. 吊球實戰決策<em>▶ 在 YouTube 觀看</em></a></li></ul>
     </div>
     <div class="board">
       <div class="board-top"><span class="board-title">側視 · 決策紅綠燈</span>
@@ -398,7 +401,7 @@ body{overflow-x:hidden}
       <div class="readout" id="foOut" aria-live="polite"></div>
     </div>
     <div class="call warn" style="max-width:34em"><span class="eyebrow">紅燈</span><p>低於網帶過多：紅燈禁挑。</p></div>
-    <ul class="vids"><li><b>Selkirk TV</b>Punch vs. Roll Volley 高度判斷與分流</li><li><b>Zane Navratil</b>網前 Roll、Poke 與 Flick 完整拆解</li></ul>
+    <ul class="vids"><li><a href="https://www.youtube.com/watch?v=WoHctpTPaEY" target="_blank" rel="noopener"><b>Selkirk TV</b>Punch vs. Roll Volley 高度判斷與分流<em>▶ 在 YouTube 觀看</em></a></li><li><a href="https://www.youtube.com/watch?v=Do1JmLvTalo" target="_blank" rel="noopener"><b>Zane Navratil</b>網前 Roll、Poke 與 Flick 完整拆解<em>▶ 在 YouTube 觀看</em></a></li></ul>
   </div>
 </section>
 
@@ -414,7 +417,7 @@ body{overflow-x:hidden}
           <p><span class="lab">精解動作</span>　膝蓋彎曲使重心低於網高，手腕鎖死、以肩膀為大擺鐘將球平推向對角線大角度或對手腳邊（拋物線頂點務必在己方半場）。</p>
           <p><span class="lab">選擇時機</span>　已順利推進站穩廚房線，或對手第 4 拍回球偏淺／偏高浮起時。</p></button>
       </div>
-      <ul class="vids"><li><b>Tanner Pickleball</b>過渡區 Split &amp; Freeze 軟手重置秘訣</li><li><b>Tanner Pickleball</b>2026 必備四大丁克球與長丁克壓迫</li></ul>
+      <ul class="vids"><li><a href="https://www.youtube.com/watch?v=0n1acvfRFgo" target="_blank" rel="noopener"><b>Tanner Pickleball</b>過渡區 Split &amp; Freeze 軟手重置秘訣<em>▶ 在 YouTube 觀看</em></a></li><li><a href="https://www.youtube.com/watch?v=-uAVYjiStZ8" target="_blank" rel="noopener"><b>Tanner Pickleball</b>2026 必備四大丁克球與長丁克壓迫<em>▶ 在 YouTube 觀看</em></a></li></ul>
     </div>
     <div class="board">
       <div class="board-top"><span class="board-title">全場俯視 · 點左側卡片切換</span><button class="btn ghost" id="fiPlay">重播球路</button></div>
@@ -449,7 +452,7 @@ body{overflow-x:hidden}
         <li class="full"><span class="k">熱壓一體成型製程 ｜ 強化：第 4 拍 網前反擊</span><span><strong>Coral Pro / Infinity 系列</strong>　結合周邊高密度減震發泡，全面擴大防守容錯甜區並賦予網前反擊爆炸力。</span></li>
       </ul>
       <div class="score"><span class="big">NINJA</span><span>結帳輸入專屬折扣碼，即享全品項 9 折。官方授權認證合作夥伴 · 正品保障 · 享原廠完整保固。</span></div>
-      <div class="links"><a href="https://ninjapb.vercel.app" target="_blank" rel="noopener"><span>預約課程</span><b>ninjapb.vercel.app</b></a><a href="https://www.instagram.com/ninjapbtw" target="_blank" rel="noopener"><span>官方 IG</span><b>@ninjapbtw</b></a><a href="https://sixzeropickleball.com" target="_blank" rel="noopener"><span>Six Zero 官方商城</span><b>sixzeropickleball.com</b></a></div>
+      <div class="links"><a href="https://ninjapb.vercel.app" target="_blank" rel="noopener"><span>預約課程</span><b>ninjapb.vercel.app</b></a><a href="https://www.instagram.com/ninjapbtw/" target="_blank" rel="noopener"><span>官方 IG</span><b>@ninjapbtw</b></a><a href="https://www.sixzeropickleball.com?sca_ref=11914723.sbiWIzNDK28ii" target="_blank" rel="noopener"><span>Six Zero 官方商城</span><b>sixzeropickleball.com</b></a></div>
     </div>
   </div>
 </section>
