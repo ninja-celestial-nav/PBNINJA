@@ -234,10 +234,14 @@
   var racket = A.you.paddle;
   /* the sculpted ninja (TRELLIS mesh, skinned in mascot.js) takes over from the procedural one once the model has
      loaded; ?ninja=classic keeps the procedural ninjas */
+  var mascotGate = null;
   if (window.NinjaMascot && THREE.GLTFLoader && !/[?&]ninja=classic\b/.test(location.search)) {
-    NinjaMascot.load(THREE, function () {
-      NinjaMascot.attach(A.you, "you"); NinjaMascot.attach(A.partner, "partner"); NinjaMascot.attach(A.o1, "opp"); NinjaMascot.attach(A.o2, "opp");
-      update(0); wake();
+    mascotGate = new Promise(function (ok) {
+      setTimeout(ok, 9000);                              /* slow network: open with the procedural ninjas, swap later */
+      NinjaMascot.load(THREE, function (m) {
+        if (m) { NinjaMascot.attach(A.you, "you"); NinjaMascot.attach(A.partner, "partner"); NinjaMascot.attach(A.o1, "opp"); NinjaMascot.attach(A.o2, "opp"); if (TL) update(0); wake(); }
+        ok();
+      });
     });
   }
   /* soft contact shadow under every ninja so their feet sit on the court */
@@ -819,7 +823,7 @@
   /* keep place across republish */
   var hot = window.claude && window.claude.hot;
   if (hot && hot.snapshot) hot.snapshot(function () { return { ci: S.ci, vi: S.vi }; });
-  function start(d) { requestAnimationFrame(function () { requestAnimationFrame(function () { var l = $("#loading"); if (l) { l.classList.add("done"); setTimeout(function () { l.remove(); }, 600); } }); });
+  function start(d) { (mascotGate || Promise.resolve()).then(function () { requestAnimationFrame(function () { requestAnimationFrame(function () { var l = $("#loading"); if (l) { l.classList.add("done"); setTimeout(function () { l.remove(); }, 600); } }); }); });
     var hsh = fromHash(); if (hsh) d = hsh;
     resize(); load(Math.min(CH.length - 1, (d && d.ci) || 0), 0); if (d && d.vi && CH[S.ci].v[d.vi]) load(S.ci, d.vi); requestAnimationFrame(frame); }
   window.__pb = { snap: function () { camSnap = true; wake(); }, update: function (dt) { update(dt); }, TL: function () { return TL; }, cam: cam, A: A, FX: FX, renderer: renderer, Quiz: Quiz, Rec: Rec, S: S, load: load, Snd: Snd };

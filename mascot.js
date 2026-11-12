@@ -18,22 +18,46 @@
   /* bone order */
   var PELVIS = 0, CHEST = 1, HEAD = 2, LEG = [3, 6], ARM = [9, 12], N = 15;
 
-  var THREE, base = null, waiting = [];
+  var THREE, base = null, failed = false, waiting = [];
+  /* the paddle hand: the open sculpted hand is rolled into a fist around a handle that runs across the palm.
+     GRIP frame in bind space: u along the fingers, a across the knuckles (the handle axis, thumb side +),
+     n the palm normal. C is the handle centre the fist closes on. */
+  var GRIP = (function () {
+    var w = B.arm[2], e = B.arm[1], ux = w[0] - e[0], uy = w[1] - e[1], l = Math.hypot(ux, uy); ux /= l; uy /= l;
+    var s0 = -0.012, R = 0.036, zmid = -0.013;
+    return { u: [ux, uy, 0], a: [-uy, ux, 0], n: [0, 0, -1], s0: s0, R: R, max: 2.3, core: 0.0165,
+      K: [w[0] + ux * s0, w[1] + uy * s0, zmid], C: [w[0] + ux * s0, w[1] + uy * s0, zmid - R] };
+  })();
+  function gripHand(geo) {
+    var pos = geo.attributes.position, G = GRIP, u = G.u, a = G.a, n = G.n, K = G.K;
+    for (var v = 0; v < pos.count; v++) {
+      var x = pos.getX(v), y = pos.getY(v), z = pos.getZ(v);
+      if (x < 0.47 || y < 0.33 || y > 0.75) continue;
+      var rx = x - K[0], ry = y - K[1], rz = z - K[2], s = rx * u[0] + ry * u[1], w = rx * a[0] + ry * a[1], h = rz * n[2];
+      if (s <= 0) continue;
+      var hc = Math.min(h, G.R - G.core), k = ss(0, 0.02, s); h = h + (hc - h) * k;       /* palm flesh presses flat on the handle */
+      var th = Math.min(G.max, s / G.R), over = s - th * G.R, rad = G.R - h, sn = Math.sin(th), cs = Math.cos(th);
+      var su = rad * sn + over * cs, hn = G.R - rad * cs + over * sn;
+      pos.setXYZ(v, K[0] + su * u[0] + w * a[0], K[1] + su * u[1] + w * a[1], K[2] + hn * n[2]);
+    }
+  }
   function load(T, cb) {
     THREE = T;
-    if (base) return cb(base);
+    if (base || failed) return cb(base);
     waiting.push(cb); if (waiting.length > 1) return;
+    function fail() { var w = waiting; waiting = []; failed = true; w.forEach(function (f) { f(null); }); }
     new THREE.GLTFLoader().load(URL, function (g) {
       var src = null; g.scene.traverse(function (o) { if (o.isMesh && !src) src = o; });
       var geo = src.geometry.clone();
       geo.applyMatrix4(new THREE.Matrix4().makeRotationY(Math.PI));        /* model faces +z; the rig's front is -z */
       geo.computeBoundingBox(); var bb = geo.boundingBox, k = K / (bb.max.y - bb.min.y);
       geo.translate(0, -bb.min.y, 0); geo.scale(k, k, k);
+      gripHand(geo);
       geo.deleteAttribute("normal"); geo.computeVertexNormals();
       skinWeights(geo);
       base = { geo: geo, armIndex: armOnly(geo), img: src.material.map.image, mats: {} };
       waiting.forEach(function (f) { f(base); }); waiting = [];
-    });
+    }, undefined, fail);
   }
 
   function ss(a, b, x) { var t = Math.max(0, Math.min(1, (x - a) / (b - a))); return t * t * (3 - 2 * t); }
@@ -138,7 +162,9 @@
     rig.setProp(PROP); rig.readyDy = -0.3;
 
     var _q = new Q(), _q2 = new Q(), _d = new V3(), _m = new THREE.Matrix4(), _s = new THREE.Matrix4(), _e = new THREE.Euler(0, 0, 0, "YXZ"), Y = new V3(0, 1, 0);
-    var qPel = new Q(), qUp = new Q();
+    var qPel = new Q(), qUp = new Q(), qh = new Q(), _x = new V3(), _y = new V3(), _z = new V3(), _w = new V3();
+    var Gp = GRIP, qGripInv = new Q().setFromRotationMatrix(new THREE.Matrix4().makeBasis(new V3().fromArray(Gp.u), new V3().fromArray(Gp.a), new V3(0, 0, 1))).invert();
+    var gripOff = new V3().fromArray(Gp.C).sub(bd.pos[ARM[1] + 2]);
     function set(i, pos, q, stretch) {
       var M = bones[i].matrixWorld;
       M.makeRotationFromQuaternion(q);
@@ -168,8 +194,17 @@
         _q2.setFromAxisAngle(Y, l.yaw); set(L + 2, l.ank, _q2);
         var a = J.arm[s], A = ARM[s];
         var k3 = swing(qUp, J.chestQ, A, a.sho, a.elb); set(A, a.sho, qUp, k3);
-        var k4 = swing(qb, qUp, A + 1, a.elb, a.hand); set(A + 1, a.elb, qb, k4);
-        set(A + 2, a.hand, qb);
+        if (s === 1 && !J.hold1) {
+          /* fist on the handle: knuckle axis along the paddle, fingers as close to the forearm line as that allows */
+          _y.set(0, 1, 0).applyQuaternion(J.padQ); _x.subVectors(a.hand, a.elb); _x.addScaledVector(_y, -_x.dot(_y));
+          if (_x.lengthSq() < 1e-5) _x.copy(J.fwdChest).addScaledVector(_y, -J.fwdChest.dot(_y)); _x.normalize(); _z.crossVectors(_x, _y);
+          _m.makeBasis(_x, _y, _z); qh.setFromRotationMatrix(_m).multiply(qGripInv);
+          _d.copy(gripOff).applyQuaternion(qh); _w.copy(a.hand).sub(_d);
+          var k5 = swing(qb, qUp, A + 1, a.elb, _w); set(A + 1, a.elb, qb, k5); set(A + 2, _w, qh);
+        } else {
+          var k4 = swing(qb, qUp, A + 1, a.elb, a.hand); set(A + 1, a.elb, qb, k4);
+          set(A + 2, a.hand, qb);
+        }
       }
     };
     rig.onFP = function (on) { main.visible = !on; arm.visible = on; };

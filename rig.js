@@ -112,7 +112,7 @@
 
     function jl() { return { hip: new V3(), knee: new V3(), ank: new V3(), yaw: 0 }; }
     function ja() { return { sho: new V3(), elb: new V3(), hand: new V3() }; }
-    var J = { hipC: new V3(), hipYaw: 0, waist: new V3(), chestQ: new THREE.Quaternion(), hd: new V3(), pitch: 0, yaw: 0, fwdHip: new V3(), fwdChest: new V3(), leg: [jl(), jl()], arm: [ja(), ja()] };
+    var J = { hipC: new V3(), hipYaw: 0, waist: new V3(), chestQ: new THREE.Quaternion(), padQ: new THREE.Quaternion(), hd: new V3(), pitch: 0, yaw: 0, fwdHip: new V3(), fwdChest: new V3(), leg: [jl(), jl()], arm: [ja(), ja()] };
     var rig = { group: g, tag: tag, paddle: paddle, eye: new V3(0, 1.45, 0), body: body, upper: upper, setProp: setProp, J: J, fp: false };
     /* first person keeps only the paddle arm in view; the rest of the body would block or clutter the lens */
     var fpHide = null;
@@ -184,7 +184,7 @@
       paddle.position.copy(p.pPos); paddle.quaternion.copy(p.pQ);
       tag.position.set(hd.x, hd.y + 0.5, hd.z);
       rig.eye.copy(hd).addScaledVector(UP, EYE);
-      J.hipC.copy(hipC); J.hipYaw = hipYaw; J.waist.copy(waist); J.chestQ.copy(chest.quaternion); J.hd.copy(hd);
+      J.padQ.copy(p.pQ); J.hipC.copy(hipC); J.hipYaw = hipYaw; J.waist.copy(waist); J.chestQ.copy(chest.quaternion); J.hd.copy(hd);
       J.pitch = head.rotation.x; J.yaw = head.rotation.y; J.fwdHip.copy(hbz.f); J.fwdChest.copy(cb.f);
       if (rig.onUpdate) rig.onUpdate(J);
       return rig;
