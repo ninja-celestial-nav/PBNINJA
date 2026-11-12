@@ -5,6 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="NinjaPB 匹克球前五拍黃金決策：每一拍一塊可操作的戰術板與測驗。">
 <title>NinjaPB 前五拍戰術互動指南</title>
+<meta name="theme-color" content="#071E3D">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="PBNINJA">
+<meta property="og:title" content="NinjaPB 前五拍戰術互動指南｜匹克球黃金決策">
+<meta property="og:description" content="第 1 拍發球到第 5 拍 Reset／長丁克：每一拍一塊可操作的戰術板、決策紅綠燈與六題測驗。Coach Ninja 監製。">
+<meta property="og:url" content="https://pbninja.vercel.app/2d/">
+<meta property="og:image" content="https://pbninja.vercel.app/og-2d.jpg">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://pbninja.vercel.app/og-2d.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -295,12 +306,7 @@ body{overflow-x:hidden}
   <div class="ch-head"><div class="ch-no">01</div><div class="en">Five-Shot Tactical Framework</div><h2>核心五拍架構</h2></div>
   <div class="cols">
     <div class="copy">
-      <ul class="pts">
-        <li class="full"><span class="k">1 &amp; 2 / 發球 &amp; 接發球</span><span>深發球壓底線鎖角度；高深接發換 2 秒 100% 上廚房。</span></li>
-        <li class="full"><span class="k">3 / 抽球 Drive vs. 吊球 Drop</span><span>淺高球果斷抽球（Drive）逼冒高；深低球軟吊（Drop）穩推進。</span></li>
-        <li class="full"><span class="k">4 / Punch · Roll · Flick</span><span>高球刺拳推深、網高滾截壓腳尖、浮球手腕快挑突擊。</span></li>
-        <li class="full"><span class="k">5 / Reset 重置 vs. 長丁克</span><span>過渡區軟手卸力進廚房；站穩廚房推對角長丁克造殺機。</span></li>
-      </ul>
+      <ul class="pts" data-pts="01" data-k="第 {n} 拍"></ul>
       <div class="call"><span class="eyebrow">誰打哪一拍</span><p>下方是發球方（白色）。第 1、3、5 拍由發球方出手，第 2、4 拍由接球方（紅色）出手。</p></div>
     </div>
     <div class="board">
@@ -318,12 +324,8 @@ body{overflow-x:hidden}
     <div class="copy">
       <div class="call"><span class="eyebrow">黃金法則</span>
         <div class="rule3"><div style="--w:80%"><b>80%</b><span>深度</span></div><i>＞</i><div style="--w:15%"><b>15%</b><span>旋轉</span></div><i>＞</i><div style="--w:5%"><b>5%</b><span>速度</span></div></div></div>
-      <ul class="pts">
-        <li class="full"><span class="k">精解力學 1</span><span><strong>合法三要素</strong>　肚臍以下觸球、拍頭低於手腕、由下往上揮拍。</span></li>
-        <li class="full"><span class="k">精解力學 2</span><span><strong>轉髖刷上旋</strong>　拋球前伸 1 呎，下肢轉髖帶動肩膀，拍面微閉 10°–15° 刷上旋。</span></li>
-        <li class="full"><span class="k">精解力學 3</span><span><strong>底線煞停</strong>　發球後立即在底線後 Split-Step 煞停（守雙彈跳原則，禁衝場內）。</span></li>
-      </ul>
-      <ul class="vids"><li><a href="https://www.youtube.com/watch?v=L0tXZgYI2R0" target="_blank" rel="noopener"><b>Briones Pickleball</b>現代重上旋深發球力學：下肢轉髖發力與底線深區壓迫軌跡<em>▶ 在 YouTube 觀看</em></a></li><li><a href="https://www.youtube.com/watch?v=HVI7TJ4_cYk" target="_blank" rel="noopener"><b>John Cincola</b>五步驟機械化穩定發球：消除手腕翻甩、100% 合法穩定動力鏈<em>▶ 在 YouTube 觀看</em></a></li></ul>
+      <ul class="pts" data-pts="02" data-from="1" data-k="精解力學 {i}"></ul>
+      <ul class="vids" data-vids="02"></ul>
     </div>
     <div class="board">
       <div class="board-top"><span class="board-title">決策紅綠燈 · 選落點</span>
@@ -339,13 +341,9 @@ body{overflow-x:hidden}
   <div class="cols">
     <div class="copy">
       <div class="call"><span class="eyebrow">戰略定位</span><p>唯一目標：安全護送自己與搭檔 100% 站穩廚房線（絕非拼一拍得分）。</p></div>
-      <ul class="pts">
-        <li class="full"><span class="k">精解力學 1</span><span><strong>0.2 秒預判墊步 (Split-Step)</strong>　在對手觸球前 0.2 秒完成 Split-Step 雙腳墊步，徹底消除啟動延遲。</span></li>
-        <li class="full"><span class="k">精解力學 2</span><span><strong>鎖腕平穩推擊 (Locked Wrist Push)</strong>　拍面微開（5°–10°）、固定手腕，以肩膀推高過網 3 呎以上之安全防護弧度。</span></li>
-        <li class="full"><span class="k">精解力學 3</span><span><strong>隨球衝刺煞停 (Return &amp; Rush)</strong>　擊球後立即前衝，在對手打第 3 拍前於廚房線前 0.5 步雙腳踩煞停步。</span></li>
-      </ul>
+      <ul class="pts" data-pts="03" data-k="精解力學 {i}"></ul>
       <div class="stats"><div><small>滯空時間</small><strong>1.5–2.0 秒</strong></div><div><small>過網高度</small><strong>3 呎以上</strong></div><div><small>煞停位置</small><strong>廚房線前 0.5 步</strong></div></div>
-      <ul class="vids"><li><a href="https://www.youtube.com/watch?v=OJYWUYMfVxI" target="_blank" rel="noopener"><b>ThatPickleballGuy</b>高深接發球換取 2 秒上網策略：避免短球被抓腳底<em>▶ 在 YouTube 觀看</em></a></li><li><a href="https://www.youtube.com/watch?v=OxNnewWzUC4" target="_blank" rel="noopener"><b>PlayPickleball</b>完美接發球站位與隨球搶網步伐<em>▶ 在 YouTube 觀看</em></a></li></ul>
+      <ul class="vids" data-vids="03"></ul>
     </div>
     <div class="board">
       <div class="board-top"><span class="board-title">決策紅綠燈 · 你是接球方（下方）</span></div>
@@ -361,12 +359,8 @@ body{overflow-x:hidden}
   <div class="cols wide-board">
     <div class="copy">
       <div class="call"><span class="eyebrow">戰略核心</span><p>抽球不是賭一拍得分，而是「逼對手冒高、為第 5 拍鋪路的過渡武器！」</p></div>
-      <ul class="pts">
-        <li><strong>沉拍頭刷上旋</strong><span>短引拍、拍頭低於手腕 4 吋，轉髖由低向高刷出強烈上旋。</span></li>
-        <li><strong>貼網急沉軌跡</strong><span>過網高度控制在 1 呎內，靠上旋急墜至對手膝蓋以下。</span></li>
-        <li><strong>抽球後前壓</strong><span>收拍短促，擊球後立即前壓至中場過渡區踩煞，銜接第 5 拍。</span></li>
-      </ul>
-      <ul class="vids"><li><a href="https://www.youtube.com/watch?v=QV7yNiKFAko" target="_blank" rel="noopener"><b>Briones Pickleball</b>現代低平急沉上旋抽球力學<em>▶ 在 YouTube 觀看</em></a></li><li><a href="https://www.youtube.com/watch?v=fChyVI3bNvU" target="_blank" rel="noopener"><b>James Ignatowich</b>第 3 拍抽球 vs. 吊球實戰決策<em>▶ 在 YouTube 觀看</em></a></li></ul>
+      <ul class="pts" data-pts="04" data-to="3" data-plain="1"></ul>
+      <ul class="vids" data-vids="04"></ul>
     </div>
     <div class="board">
       <div class="board-top"><span class="board-title">側視 · 決策紅綠燈</span>
@@ -383,17 +377,17 @@ body{overflow-x:hidden}
   <div class="cols wide-board">
     <div class="pair" id="foCards" style="grid-template-columns:repeat(auto-fit,minmax(230px,1fr))">
       <button class="card" data-v="punch" aria-pressed="true"><span class="eyebrow">Punch Volley</span><h3>拳擊推截擊</h3>
-        <p><span class="lab">動作要領</span>　拍置胸前 10–11 點鐘不拉拍，鎖死手腕向前短促刺拳頂出 6 吋。</p>
-        <p><span class="lab">執行時機</span>　來球高於網帶，或迎擊對手第 3 拍強抽（Drive）。</p>
-        <p><span class="lab">戰術原因</span>　反應時間僅 0.3 秒，短刺拳最穩，直接借力把球深壓回對手底線／腳邊。</p></button>
+        <p><span class="lab">動作要領</span>　<span data-f="pts:05:0"></span></p>
+        <p><span class="lab">執行時機</span>　<span data-f="when:05:punch"></span></p>
+        <p><span class="lab">戰術原因</span>　<span data-f="why:05:punch"></span></p></button>
       <button class="card" data-v="roll" aria-pressed="false"><span class="eyebrow">Roll Volley</span><h3>上旋滾截擊</h3>
-        <p><span class="lab">動作要領</span>　拍面微扣 10°–15°、手肘在身前，前臂內旋（Pronation）由下往上滾刷。</p>
-        <p><span class="lab">執行時機</span>　對手第 3 拍 Drop 略高，正處於網帶高度或下墜中需空中攔截時。</p>
-        <p><span class="lab">戰術原因</span>　高度不足以平推，靠上旋越網急沉壓在過渡區對手腳尖，逼其抬高下一拍。</p></button>
+        <p><span class="lab">動作要領</span>　<span data-f="pts:05:1"></span></p>
+        <p><span class="lab">執行時機</span>　<span data-f="when:05:roll"></span></p>
+        <p><span class="lab">戰術原因</span>　<span data-f="why:05:roll"></span></p></button>
       <button class="card" data-v="flick" aria-pressed="false"><span class="eyebrow">Flick</span><h3>手腕快挑突擊</h3>
-        <p><span class="lab">動作要領</span>　維持常規 Dink 隱蔽姿勢，觸球瞬間手指抓緊握把（Finger Squeeze）微甩手腕。</p>
-        <p><span class="lab">執行時機</span>　廚房區來球略微浮高、對手重心偏離或未防備時。</p>
-        <p><span class="lab">戰術原因</span>　極高隱蔽性與短槓桿爆發球速，精準突襲對手執拍肩腋下（Chicken Wing）。</p></button>
+        <p><span class="lab">動作要領</span>　<span data-f="pts:05:2"></span></p>
+        <p><span class="lab">執行時機</span>　<span data-f="when:05:flick"></span></p>
+        <p><span class="lab">戰術原因</span>　<span data-f="why:05:flick"></span></p></button>
     </div>
     <div class="board">
       <div class="board-top"><span class="board-title">側視 · 依來球高度分流（你在左側廚房線）</span><button class="btn ghost" id="foPlay">重播球路</button></div>
@@ -401,7 +395,7 @@ body{overflow-x:hidden}
       <div class="readout" id="foOut" aria-live="polite"></div>
     </div>
     <div class="call warn" style="max-width:34em"><span class="eyebrow">紅燈</span><p>低於網帶過多：紅燈禁挑。</p></div>
-    <ul class="vids"><li><a href="https://www.youtube.com/watch?v=WoHctpTPaEY" target="_blank" rel="noopener"><b>Selkirk TV</b>Punch vs. Roll Volley 高度判斷與分流<em>▶ 在 YouTube 觀看</em></a></li><li><a href="https://www.youtube.com/watch?v=Do1JmLvTalo" target="_blank" rel="noopener"><b>Zane Navratil</b>網前 Roll、Poke 與 Flick 完整拆解<em>▶ 在 YouTube 觀看</em></a></li></ul>
+    <ul class="vids" data-vids="05"></ul>
   </div>
 </section>
 
@@ -411,13 +405,13 @@ body{overflow-x:hidden}
     <div class="copy">
       <div class="pair" id="fiCards">
         <button class="card" data-v="reset" aria-pressed="true"><span class="eyebrow">受壓防守</span><h3>Reset<br>過渡區軟手重置</h3>
-          <p><span class="lab">精解動作</span>　雙腳「Split &amp; Freeze」煞停凍結，握力降至 2–3/10（海綿手感），拍面微開 45° 不揮拍，靠手肘避震把球輕卸入廚房。</p>
-          <p><span class="lab">選擇時機</span>　人還卡在中場過渡區（無人區），且對手第 4 拍強勢截擊下壓至腳邊時。</p></button>
+          <p><span class="lab">精解動作</span>　<span data-f="pts:06:1"></span></p>
+          <p><span class="lab">選擇時機</span>　<span data-f="when:06:reset"></span></p></button>
         <button class="card" data-v="dink" aria-pressed="false"><span class="eyebrow">網前壓迫</span><h3>長丁克<br>Aggressive Dink</h3>
-          <p><span class="lab">精解動作</span>　膝蓋彎曲使重心低於網高，手腕鎖死、以肩膀為大擺鐘將球平推向對角線大角度或對手腳邊（拋物線頂點務必在己方半場）。</p>
-          <p><span class="lab">選擇時機</span>　已順利推進站穩廚房線，或對手第 4 拍回球偏淺／偏高浮起時。</p></button>
+          <p><span class="lab">精解動作</span>　<span data-f="pts:06:2"></span></p>
+          <p><span class="lab">選擇時機</span>　<span data-f="when:06:dink"></span></p></button>
       </div>
-      <ul class="vids"><li><a href="https://www.youtube.com/watch?v=0n1acvfRFgo" target="_blank" rel="noopener"><b>Tanner Pickleball</b>過渡區 Split &amp; Freeze 軟手重置秘訣<em>▶ 在 YouTube 觀看</em></a></li><li><a href="https://www.youtube.com/watch?v=-uAVYjiStZ8" target="_blank" rel="noopener"><b>Tanner Pickleball</b>2026 必備四大丁克球與長丁克壓迫<em>▶ 在 YouTube 觀看</em></a></li></ul>
+      <ul class="vids" data-vids="06"></ul>
     </div>
     <div class="board">
       <div class="board-top"><span class="board-title">全場俯視 · 點左側卡片切換</span><button class="btn ghost" id="fiPlay">重播球路</button></div>
@@ -434,33 +428,14 @@ body{overflow-x:hidden}
 
 <section class="ch" id="coach">
   <div class="ch-head"><div class="ch-no">08</div><div class="en">Coach Ninja · Six Zero Official Gear Partner</div><h2>Coach Ninja 專業教學課程與裝備</h2></div>
-  <div class="cols">
-    <div class="copy">
-      <div class="call"><span class="eyebrow">認證教學體系 &amp; 高速攝影逐格診斷</span><p>助學員突破 <span class="big">DUPR 3.0 → 4.0</span></p><p>RPO / PPR 國際職業教練認證。高速慢動作攝影逐格技術診斷，專治手腕代償翻腕與過渡區失誤。</p></div>
-      <ul class="pts">
-        <li class="full"><span class="k">01 ｜ 雙北 · 天母 · 北投 · 內湖 彈性開班</span><span><strong>1-on-1 / 1-on-2 個人技術精修班</strong>　慢動作逐格拆解第 1–5 拍動力鏈，矯正手腕代償翻腕，打造穩健個人化動作模型。</span></li>
-        <li class="full"><span class="k">02</span><span><strong>雙打搭檔實戰戰術特訓營</strong>　聚焦雙人連動走位、中路責任區劃分與「Drive &amp; Crash」搶網撲殺戰術。</span></li>
-        <li class="full"><span class="k">03</span><span><strong>DUPR 分級進階班 &amp; 新手體驗班（3–4 人精緻小班）</strong>　從擊球決策紅綠燈到高強度情境對抗，深度內化實戰肌肉記憶。</span></li>
-      </ul>
-      <div class="call"><span class="eyebrow">學員專屬福利</span><p>上課期間提供 Six Zero 全系列旗艦球拍免費試打體驗，並加贈專業球拍鉛片配重客製化調整指導。</p></div>
-    </div>
-    <div class="copy">
-      <p>Six Zero 澳洲頂級球拍：出色停球滯空感（Dwell Time）與減震大甜區，大幅提升第 3 拍 Drop 與第 5 拍 Reset 成功率。</p>
-      <ul class="pts">
-        <li class="full"><span class="k">日本 Toray 生碳纖維 ｜ 強化：第 5 拍 Reset</span><span><strong>Double Black Diamond (DBD)</strong>　極致手感回饋與軟手 Reset 首選，全能型選手的頂級標竿戰拍。</span></li>
-        <li class="full"><span class="k">100% 杜邦 Kevlar 芳綸纖維面板 ｜ 強化：第 3 拍 Drive · 第 4 拍 Roll</span><span><strong>Ruby Pro</strong>　提供極限咬球旋轉與超高耐磨度，是第 3 拍抽球與上旋滾截擊的進攻神器。</span></li>
-        <li class="full"><span class="k">熱壓一體成型製程 ｜ 強化：第 4 拍 網前反擊</span><span><strong>Coral Pro / Infinity 系列</strong>　結合周邊高密度減震發泡，全面擴大防守容錯甜區並賦予網前反擊爆炸力。</span></li>
-      </ul>
-      <div class="score"><span class="big">NINJA</span><span>結帳輸入專屬折扣碼，即享全品項 9 折。官方授權認證合作夥伴 · 正品保障 · 享原廠完整保固。</span></div>
-      <div class="links"><a href="https://ninjapb.vercel.app" target="_blank" rel="noopener"><span>預約課程</span><b>ninjapb.vercel.app</b></a><a href="https://www.instagram.com/ninjapbtw/" target="_blank" rel="noopener"><span>官方 IG</span><b>@ninjapbtw</b></a><a href="https://www.sixzeropickleball.com?sca_ref=11914723.sbiWIzNDK28ii" target="_blank" rel="noopener"><span>Six Zero 官方商城</span><b>sixzeropickleball.com</b></a></div>
-    </div>
-  </div>
+  <div class="cols" id="coachBox"></div>
 </section>
 
 <footer>內容整理自簡報《NinjaPB 匹克球前五拍黃金決策》，Coach Ninja (@ninjapbtw) 監製，嚴格遵循雙彈跳與 NVZ 規則。戰術板為示意圖，比例依 44 呎 × 20 呎球場繪製；球路弧度為教學示意。</footer>
 </main>
 </div>
 
+<script src="/scenes.js"></script>
 <script>
 (function(){
 "use strict";
@@ -492,6 +467,26 @@ const out=(el,head,body,bad)=>{el.classList.toggle('bad',!!bad);el.innerHTML='<b
 /* decision traffic light readout */
 const lamp=(el,kind,title,when,why)=>{el.dataset.light=kind;el.classList.toggle('bad',kind==='stop');
   el.innerHTML='<span class="lamps" aria-hidden="true"><i></i><i></i><i></i></span><div><b>'+({go:'GO',alt:'ALT',stop:'STOP'})[kind]+' ｜ '+title+'</b><p><strong>時機</strong>　'+when+'</p><p><strong>原因</strong>　'+why+'</p></div>';};
+
+/* ---- shared deck text: everything the deck says comes from /scenes.js, the same data the 3D court uses ---- */
+const DATA=window.NINJAPB, CHN=no=>DATA.CH.filter(c=>c.no===no)[0], VAR=(no,id)=>CHN(no).v.filter(v=>v.id===id)[0];
+const esc=t=>String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const split=t=>{const i=t.indexOf('：');return i<0?['',t]:[t.slice(0,i),t.slice(i+1)];};
+$$('[data-pts]').forEach(ul=>{const c=CHN(ul.dataset.pts),from=+(ul.dataset.from||0),to=ul.dataset.to?+ul.dataset.to:c.pts.length;
+  ul.innerHTML=c.pts.slice(from,to).map((p,i)=>{const [h,b]=split(p);
+    if(ul.dataset.plain) return '<li><strong>'+esc(h)+'</strong><span>'+esc(b)+'</span></li>';
+    const k=(ul.dataset.k||'').replace('{i}',i+1).replace('{n}',h.replace(/^第\s*|\s*拍$/g,''));
+    return '<li class="full"><span class="k">'+esc(ul.dataset.pts==='01'?h:k)+'</span><span>'+(ul.dataset.pts==='01'?esc(b):'<strong>'+esc(h)+'</strong>　'+esc(b))+'</span></li>';}).join('');});
+$$('[data-vids]').forEach(ul=>{ul.innerHTML=(CHN(ul.dataset.vids).vids||[]).map(x=>'<li>'+(x[2]?'<a href="'+x[2]+'" target="_blank" rel="noopener"><b>'+esc(x[0])+'</b>'+esc(x[1])+'<em>▶ 在 YouTube 觀看</em></a>':'<b>'+esc(x[0])+'</b>'+esc(x[1]))+'</li>').join('');});
+$$('[data-f]').forEach(el=>{const [kind,no,arg]=el.dataset.f.split(':');el.textContent=kind==='pts'?split(CHN(no).pts[+arg])[1]:VAR(no,arg)[kind];});
+const lampV=(el,no,id)=>{const v=VAR(no,id);lamp(el,v.light,v.lt,v.when,v.why);};
+(function(){const c=DATA.INFO.coach,g=DATA.INFO.gear;
+  $('#coachBox').innerHTML='<div class="copy"><div class="call"><span class="eyebrow">'+esc(c.sub)+'</span>'+c.facts.slice(0,3).map(f=>'<p>'+esc(f)+'</p>').join('')+'</div>'+
+    '<ul class="pts">'+c.plans.map((p,i)=>'<li class="full"><span class="k">'+p[0]+(i?'':' ｜ '+esc(c.where))+'</span><span><strong>'+esc(p[1])+'</strong>　'+esc(p[2])+'</span></li>').join('')+'</ul>'+
+    '<div class="call"><span class="eyebrow">學員專屬福利</span><p>'+esc(c.facts[3].replace(/^學員專屬福利：/,''))+'</p></div></div>'+
+    '<div class="copy"><p>'+esc(g.sub)+'</p><ul class="pts">'+g.paddles.map(p=>'<li class="full"><span class="k">'+esc(p[1])+' ｜ 強化：'+esc(p[3])+'</span><span><strong>'+esc(p[0])+'</strong>　'+esc(p[2])+'</span></li>').join('')+'</ul>'+
+    '<div class="score"><span class="big">'+esc(g.code)+'</span><span>'+esc(g.deal)+'</span></div>'+
+    '<div class="links">'+DATA.INFO.links.map(l=>'<a href="'+l[2]+'" target="_blank" rel="noopener"><span>'+esc(l[0])+'</span><b>'+esc(l[1])+'</b></a>').join('')+'</div></div>';})();
 
 /* ---- court templates. Metres: x across, z along, net at z=0, "you" on z>0 (bottom / left). ---- */
 const X=x=>130+30*x, Y=z=>235+30*z, pt=(x,z)=>X(x).toFixed(1)+' '+Y(z).toFixed(1);
@@ -550,9 +545,9 @@ const arc=(a,b,c)=>'M'+SX(a[0]).toFixed(1)+' '+SY(a[1]).toFixed(1)+' Q'+SX(c[0])
 /* ---- 02 serve ---- */
 (function(){
   const svg=$('#svSvg');
-  const D={deep:{to:[-1.6,-6.0],o:[-1.4,-7.4],z:[-HW,0,-6.1,-5.8],zl:'底線前 2–3 呎',k:'go',h:'常規首選｜打深球（底線前 2–3 呎）',w:'所有常規發球回合。',y:'把對手釘在底線深處，拉長其上網距離並削弱第 2 拍回球威脅。',r:[-1.6,-7.4]},
-           bh:{to:[-0.45,-5.9],o:[-1.9,-7.4],z:[-1.0,0,-BL,-5.0],zl:'反手側',k:'alt',h:'戰術變奏｜壓反手',w:'對手反手較弱時。',y:'逼對手移動中用弱側擊球，直接製造第 3 拍肉包高球。',r:[-0.7,-7.2]},
-           wide:{to:[-2.7,-4.5],o:[-0.9,-7.4],z:[-HW,-2.2,-5.6,-3.4],zl:'外角',k:'alt',h:'戰術變奏｜切外角',w:'對手站位偏中線時。',y:'逼對手移動中用弱側擊球、把人拉出場外，直接製造第 3 拍肉包高球。',r:[-2.9,-6.3]}};
+  const D={deep:{to:[-1.6,-6.0],o:[-1.4,-7.4],z:[-HW,0,-6.1,-5.8],zl:'底線前 2–3 呎',r:[-1.6,-7.4]},
+           bh:{to:[-0.45,-5.9],o:[-1.9,-7.4],z:[-1.0,0,-BL,-5.0],zl:'反手側',r:[-0.7,-7.2]},
+           wide:{to:[-2.7,-4.5],o:[-0.9,-7.4],z:[-HW,-2.2,-5.6,-3.4],zl:'外角',r:[-2.9,-6.3]}};
   svg.innerHTML=full({under:'<rect id="svZ" class="tz"/>',over:'<path id="svP" class="traj"/><text id="svZT" class="tc y" text-anchor="middle"></text>'+
     P('svO1','','opp','接球者')+P('svO2','','opp')+P('svB','P')+P('svA','YOU')+'<circle id="svBall" class="ball" r="6"/>'});
   const O1=$('#svO1'),ball=$('#svBall'),p=$('#svP'),z=$('#svZ'),zt=$('#svZT'),o=$('#svOut');
@@ -562,7 +557,7 @@ const arc=(a,b,c)=>'M'+SX(a[0]).toFixed(1)+' '+SY(a[1]).toFixed(1)+' Q'+SX(c[0])
     p.setAttribute('d',line([1.25,6.95],d.to));
     z.setAttribute('x',X(d.z[0]));z.setAttribute('y',Y(d.z[2]));z.setAttribute('width',30*(d.z[1]-d.z[0]));z.setAttribute('height',30*(d.z[3]-d.z[2]));z.setAttribute('class','tz '+d.k);
     zt.setAttribute('x',X((d.z[0]+d.z[1])/2));zt.setAttribute('y',Y(d.z[3])+14);zt.textContent=d.zl;
-    lamp(o,d.k,d.h,d.w,d.y);at(O1,d.o[0],d.o[1]);
+    lampV(o,'02',v);at(O1,d.o[0],d.o[1]);
     if(!anim){park(ball,p,1);at(O1,d.r[0],d.r[1]);return;}
     park(ball,p,0);await wait(450);if(my!==run)return;
     at(O1,d.r[0],d.r[1]);await fly(ball,p,1000);
@@ -573,10 +568,10 @@ const arc=(a,b,c)=>'M'+SX(a[0]).toFixed(1)+' '+SY(a[1]).toFixed(1)+' Q'+SX(c[0])
 /* ---- 03 return ---- */
 (function(){
   const svg=$('#rtSvg');
-  const D={deep:{to:[-1.3,-5.9],k:'go',h:'為何選「高且深（High & Deep）」慢速長球？',w:'面對對手深發球或強勁發球時。',y:'為自身爭取 1.5–2.0 秒充足滯空時間從容上廚房線；若打平快短球會壓縮自己上網時間，在半途被抓腳底。',z:[-HW,HW,-BL,-5.3],zl:'深區',dur:1700},
-           mid:{to:[0.1,-5.8],k:'alt',h:'落點決策｜打雙打中路',w:'想縮小對手第 3 拍的回球角度時。',y:'縮小對手回球角度、製造搭檔搶球與溝通混亂。',z:[-0.8,0.8,-BL,-4.8],zl:'中路：你的？我的？',dur:1700},
-           bh:{to:[2.5,-6.0],k:'alt',h:'落點決策｜打反手深角',w:'對手第 3 拍正手強抽（Drive）威脅大時。',y:'精準推向對手深反手底角，封死其第 3 拍正手強抽（Drive）威力。',z:[1.9,HW,-BL,-5.3],zl:'反手深角',dur:1700},
-           flat:{to:[-1.0,-4.5],k:'stop',h:'反例｜平快短球',w:'把接發球打成又平、又快、又短的球。',y:'若打平快短球會壓縮自己上網時間，在半途被抓腳底。',z:[-HW,HW,KL,5.0],zl:'你還卡在過渡區',dur:750}};
+  const D={deep:{to:[-1.3,-5.9],z:[-HW,HW,-BL,-5.3],zl:'深區',dur:1700},
+           mid:{to:[0.1,-5.8],z:[-0.8,0.8,-BL,-4.8],zl:'中路：你的？我的？',dur:1700},
+           bh:{to:[2.5,-6.0],z:[1.9,HW,-BL,-5.3],zl:'反手深角',dur:1700},
+           flat:{to:[-1.0,-4.5],z:[-HW,HW,KL,5.0],zl:'你還卡在過渡區',dur:750}};
   svg.innerHTML=full({under:'<rect id="rtZ" class="tz"/>',over:'<path id="rtP" class="traj"/><path id="rtP2" class="traj bad fade hide" d="'+line([-1.1,-5.2],[1.35,3.1])+'"/><path id="rtRun" class="run"/><text id="rtZT" class="tc" text-anchor="middle"></text>'+
     P('rtO1','','opp','發球者')+P('rtO2','','opp')+P('rtB','P','','搭檔')+P('rtA','YOU')+'<circle id="rtBall" class="ball" r="6"/>'});
   const A=$('#rtA'),O1=$('#rtO1'),O2=$('#rtO2'),ball=$('#rtBall'),p=$('#rtP'),p2=$('#rtP2'),z=$('#rtZ'),zt=$('#rtZT'),o=$('#rtOut'),rn=$('#rtRun');
@@ -587,7 +582,7 @@ const arc=(a,b,c)=>'M'+SX(a[0]).toFixed(1)+' '+SY(a[1]).toFixed(1)+' Q'+SX(c[0])
     rn.setAttribute('d',line([1.25,7.4],end));
     z.setAttribute('x',X(d.z[0]));z.setAttribute('y',Y(d.z[2]));z.setAttribute('width',30*(d.z[1]-d.z[0]));z.setAttribute('height',30*(d.z[3]-d.z[2]));z.setAttribute('class','tz '+d.k);
     zt.setAttribute('x',X((d.z[0]+d.z[1])/2));zt.setAttribute('y',v==='flat'?Y(d.z[3])-8:Y(d.z[3])+14);zt.textContent=d.zl;zt.setAttribute('class','tc '+(v==='flat'?'r':'y'));
-    lamp(o,d.k,d.h,d.w,d.y);
+    lampV(o,'03',v);
     at(O1,-0.85,-7.3);at(O2,1.6,-7.2);
     if(!anim){at(A,end[0],end[1]);park(ball,v==='flat'?p2:p,1);if(v==='flat')p2.classList.remove('hide');return;}
     at(A,1.25,7.4);park(ball,p,0);await wait(450);if(my!==run)return;
@@ -605,18 +600,15 @@ const arc=(a,b,c)=>'M'+SX(a[0]).toFixed(1)+' '+SY(a[1]).toFixed(1)+' Q'+SX(c[0])
 /* ---- 04 third shot (side view) ---- */
 (function(){
   const svg=$('#thSvg');
-  const D={drive:{in:arc([-7.4,0.8],[3.0,0],[-2.5,2.6]),out:arc([4.0,0.9],[-3.9,0.45],[0,1.25]),y0:5.2,y1:3.9,o0:-7.4,o1:-4.2,k:'go',h:'綠燈｜選「抽球 (Drive)」',
-             w:'1. 對手接發偏淺／偏高：距離近、下壓角度大，成功率最高。 2. 對手仍在跑動上網未站穩。',y:'快球抓腳底逼出肉包球，讓搭檔 Drive & Crash 撲殺或自己輕鬆打第 5 拍 Drop。',l:'過網 1 呎內，急墜到膝蓋以下',lx:1.6,ly:1.55,d:520},
-           drop:{in:arc([-7.4,0.8],[6.2,0],[-0.5,6.2]),out:arc([7.3,0.4],[-1.3,0],[3.4,4.3]),y0:7.4,y1:2.7,o0:-7.4,o1:-2.5,k:'stop',h:'紅燈｜改選「吊球 (Drop)」',
-             w:'接發球極深且低、自己後仰失衡，且對手已站穩廚房線。',y:'失衡強抽易掛網或出界，改打頂點在己方半場的軟吊球爭取上網時間。',l:'頂點在己方半場',lx:3.4,ly:2.6,d:1300},
-           net:{in:arc([-7.4,0.8],[6.2,0],[-0.5,6.2]),out:arc([7.3,0.4],[0.05,0.55],[3.6,1.5]),y0:7.4,y1:7.4,o0:-7.4,o1:-2.5,k:'stop',h:'反例｜紅燈還硬抽',
-             w:'接發球極深且低、自己後仰失衡，卻還是選擇強抽。',y:'失衡強抽易掛網或出界。',l:'✕ 掛網',lx:1.3,ly:1.3,d:520}};
+  const D={drive:{in:arc([-7.4,0.8],[3.0,0],[-2.5,2.6]),out:arc([4.0,0.9],[-3.9,0.45],[0,1.25]),y0:5.2,y1:3.9,o0:-7.4,o1:-4.2,l:'過網 1 呎內，急墜到膝蓋以下',lx:1.6,ly:1.55,d:520},
+           drop:{in:arc([-7.4,0.8],[6.2,0],[-0.5,6.2]),out:arc([7.3,0.4],[-1.3,0],[3.4,4.3]),y0:7.4,y1:2.7,o0:-7.4,o1:-2.5,l:'頂點在己方半場',lx:3.4,ly:2.6,d:1300},
+           net:{in:arc([-7.4,0.8],[6.2,0],[-0.5,6.2]),out:arc([7.3,0.4],[0.05,0.55],[3.6,1.5]),y0:7.4,y1:7.4,o0:-7.4,o1:-2.5,l:'✕ 掛網',lx:1.3,ly:1.3,d:520}};
   svg.innerHTML=side('<path id="thIn" class="traj alt"/><path id="thOut2" class="traj"/><text id="thL" class="tc y" text-anchor="middle"></text>'+SP('thY','YOU')+SP('thO','對手','opp')+'<circle id="thB" class="ball" r="6"/>');
   const Yp=$('#thY'),O=$('#thO'),b=$('#thB'),pi=$('#thIn'),po=$('#thOut2'),L=$('#thL'),o=$('#thOut');let cur='drive',run=0;
   async function set(v,anim){cur=v;const my=++run,d=D[v];
     pi.setAttribute('d',d.in);po.setAttribute('d',d.out);po.classList.toggle('bad',v==='net');
     L.setAttribute('x',SX(d.lx));L.setAttribute('y',SY(d.ly));L.textContent=d.l;L.setAttribute('class','tc '+(v==='net'?'r':'y'));
-    lamp(o,d.k,d.h,d.w,d.y);pick($('#thSeg'),v);
+    lampV(o,'04',v);pick($('#thSeg'),v);
     if(!anim){mv(Yp,SX(d.y1),220);mv(O,SX(d.o1),220);park(b,po,1);return;}
     mv(Yp,SX(d.y0+0.5),220);mv(O,SX(d.o0),220);park(b,pi,0);await wait(350);if(my!==run)return;
     O.style.transitionDuration='1.6s';mv(O,SX(d.o1),220);
@@ -706,5 +698,6 @@ const arc=(a,b,c)=>'M'+SX(a[0]).toFixed(1)+' '+SY(a[1]).toFixed(1)+' Q'+SX(c[0])
 })();
 })();
 </script>
+<script defer src="/_vercel/insights/script.js"></script>
 </body>
 </html>

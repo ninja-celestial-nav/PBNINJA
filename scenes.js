@@ -132,7 +132,7 @@
           caps: [{ after: 7, delay: 1.0, text: "爭取最後兩步，安全踏上廚房線" }] }
       ] },
 
-    { no: "02", title: "第 1 拍 發球", en: "Shot 1 · The Serve",
+    { no: "02", title: "第 1 拍 發球", en: "Shot 1 · The Serve", quiz: "label", ask: "你要把發球打到哪裡？",
       key: "深壓底線，鎖死對手進攻。",
       pts: ["黃金法則：深度 80% ＞ 旋轉 15% ＞ 速度 5%。", "合法三要素：肚臍以下觸球、拍頭低於手腕、由下往上揮拍。", "轉髖刷上旋：拋球前伸 1 呎，下肢轉髖帶動肩膀，拍面微閉 10°–15° 刷上旋。", "底線煞停：發球後立即在底線後 Split-Step 煞停（守雙彈跳原則，禁衝場內）。"],
       vids: [["Briones Pickleball", "現代重上旋深發球力學：下肢轉髖發力與底線深區壓迫軌跡", "https://www.youtube.com/watch?v=L0tXZgYI2R0"], ["John Cincola", "五步驟機械化穩定發球：消除手腕翻甩、100% 合法穩定動力鏈", "https://www.youtube.com/watch?v=HVI7TJ4_cYk"]],
@@ -164,7 +164,7 @@
             { p: [0.65, 0.9, 4.8], T: 0.35 }]) }
       ] },
 
-    { no: "03", title: "第 2 拍 接發球", en: "Shot 2 · Return of Serve",
+    { no: "03", title: "第 2 拍 接發球", en: "Shot 2 · Return of Serve", quiz: false,
       key: "高深弧線換時間，100% 搶佔廚房線。唯一目標是安全護送自己與搭檔站穩廚房線，絕非拼一拍得分。",
       pts: ["0.2 秒預判墊步：在對手觸球前 0.2 秒完成 Split-Step 雙腳墊步，徹底消除啟動延遲。", "鎖腕平穩推擊：拍面微開（5°–10°）、固定手腕，以肩膀推高過網 3 呎以上之安全防護弧度。", "隨球衝刺煞停（Return & Rush）：擊球後立即前衝，在對手打第 3 拍前於廚房線前 0.5 步雙腳踩煞停步。"],
       vids: [["ThatPickleballGuy", "高深接發球換取 2 秒上網策略：以高度與深度爭取跑位時間、避免短球被抓腳底", "https://www.youtube.com/watch?v=OJYWUYMfVxI"], ["PlayPickleball", "完美接發球站位與隨球搶網步伐：Split-Step 預判啟動、固定手腕推擊與第一時間衝刺就位", "https://www.youtube.com/watch?v=OxNnewWzUC4"]],
@@ -215,7 +215,7 @@
           moves: [{ who: "you", after: 2, delay: 0.22, to: [1.3, 3.5], dur: 1.3 }] }
       ] },
 
-    { no: "04", title: "第 3 拍 抽球 vs. 吊球", en: "Shot 3 · Drive vs. Drop",
+    { no: "04", title: "第 3 拍 抽球 vs. 吊球", en: "Shot 3 · Drive vs. Drop", ask: "第 3 拍該打哪一種？",
       key: "抽球不是賭一拍得分，而是「逼對手冒高、為第 5 拍鋪路的過渡武器」。",
       pts: ["沉拍頭刷上旋：短引拍、拍頭低於手腕 4 吋，轉髖由低向高刷出強烈上旋。", "貼網急沉軌跡：過網高度控制在 1 呎內，靠上旋急墜至對手膝蓋以下。", "抽球後前壓：收拍短促，擊球後立即前壓至中場過渡區踩煞，銜接第 5 拍。", "紅燈改吊球：失衡強抽易掛網或出界，改打頂點在己方半場的軟吊球。"],
       vids: [["Briones Pickleball", "現代低平急沉上旋抽球力學：沉拍頭 4 吋與轉髖刷球，使球過網急速下墜至膝蓋以下", "https://www.youtube.com/watch?v=QV7yNiKFAko"], ["James Ignatowich", "第 3 拍抽球 vs. 吊球實戰決策：何時果斷強抽（Drive）、何時軟吊（Drop）", "https://www.youtube.com/watch?v=fChyVI3bNvU"]],
@@ -260,7 +260,7 @@
           moves: [{ who: "o1", after: 0, delay: 0.2, to: [-0.9, -2.5], dur: 1.6 }] }
       ] },
 
-    { no: "05", title: "第 4 拍 Punch / Roll / Flick", en: "Shot 4 · Punch / Roll / Flick",
+    { no: "05", title: "第 4 拍 Punch / Roll / Flick", en: "Shot 4 · Punch / Roll / Flick", ask: "這顆球怎麼截？",
       key: "守住廚房，封鎖推進。依來球高度、旋轉與對手推進狀態，三維動態決策封鎖中前場。",
       pts: ["Punch 拳擊推截擊：拍置胸前 10–11 點鐘不拉拍，鎖死手腕向前短促刺拳頂出 6 吋。", "Roll 上旋滾截擊：拍面微扣 10°–15°、手肘在身前，前臂內旋（Pronation）由下往上滾刷。", "Flick 手腕快挑突擊：維持常規 Dink 隱蔽姿勢，觸球瞬間手指抓緊握把（Finger Squeeze）微甩手腕。", "低於網帶過多：紅燈禁挑。"],
       vids: [["Selkirk TV", "Punch vs. Roll Volley 高度判斷與分流：網前平推截擊與上旋滾截之關鍵高度判斷", "https://www.youtube.com/watch?v=WoHctpTPaEY"], ["Zane Navratil", "網前 Roll、Poke 與 Flick 完整拆解：動作拆解與選擇時機", "https://www.youtube.com/watch?v=Do1JmLvTalo"]],
@@ -307,7 +307,7 @@
             { p: [0.9, 0.7, 5.6], T: 0.4 }] }
       ] },
 
-    { no: "06", title: "第 5 拍 Reset vs. 長丁克", en: "Shot 5 · Reset or Aggressive Dink",
+    { no: "06", title: "第 5 拍 Reset vs. 長丁克", en: "Shot 5 · Reset or Aggressive Dink", ask: "第 5 拍怎麼處理？",
       key: "化被動為主動，奪取網前控制權。",
       pts: ["五拍架構：過渡區軟手卸力進廚房；站穩廚房推對角長丁克造殺機。", "Reset：雙腳「Split & Freeze」煞停凍結，握力降至 2–3/10（海綿手感），拍面微開 45° 不揮拍，靠手肘避震把球輕卸入廚房。", "長丁克：膝蓋彎曲使重心低於網高，手腕鎖死、以肩膀為大擺鐘將球平推向對角線大角度或對手腳邊（拋物線頂點務必在己方半場）。"],
       vids: [["Tanner Pickleball", "過渡區 Split & Freeze 軟手重置秘訣：雙腳煞停凍結、2–3/10 握力卸力進廚房", "https://www.youtube.com/watch?v=0n1acvfRFgo"], ["Tanner Pickleball", "2026 必備四大丁克球與長丁克壓迫：對角線大角度空間拉扯", "https://www.youtube.com/watch?v=-uAVYjiStZ8"]],

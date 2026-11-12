@@ -25,7 +25,8 @@
     function bone(r0, r1, mat, parent) { var geo = new THREE.CylinderGeometry(r1, r0, 1, 14); geo.translate(0, 0.5, 0); return mesh(geo, mat, parent); }
     function band(m, r, y0, y1, mat) { var geo = new THREE.CylinderGeometry(r, r, y1 - y0, 14); geo.translate(0, (y0 + y1) / 2, 0); var b = new THREE.Mesh(geo, mat); b.castShadow = true; m.add(b); }
     function ball(r, mat, parent) { return mesh(sph, mat, parent, r, r, r); }
-    function put(m, A, B) { var d = B.clone().sub(A), len = d.length(); m.position.copy(A); m.scale.set(1, len, 1); m.quaternion.setFromUnitVectors(UP, d.multiplyScalar(1 / len)); }
+    var _d = new V3();
+    function put(m, A, B) { _d.subVectors(B, A); var len = _d.length() || 1e-6; m.position.copy(A); m.scale.set(1, len, 1); m.quaternion.setFromUnitVectors(UP, _d.multiplyScalar(1 / len)); }
     function lathe(pts, sz) { var geo = new THREE.LatheGeometry(pts.map(function (p) { return new THREE.Vector2(p[0], p[1]); }), 24); geo.scale(1, 1, sz); return geo; }
 
     /* round, soft, slightly clueless: big hooded head, bean body, stubby limbs, mitten hands */
@@ -68,15 +69,46 @@
     var tag = new THREE.Group(); g.add(tag);
     var paddle = o.paddle; g.add(paddle);
 
+    /* two-bone solve; the result vectors are reused, so callers read them before the next call */
+    var _dir = new V3(), _perp = new V3(), _ik = { mid: new V3(), end: new V3() };
     function ik(S, T, a, b, pole) {
-      var d = T.clone().sub(S), len = d.length(), Lc = clamp(len, Math.abs(a - b) + 0.01, (a + b) * 0.999), dir = d.multiplyScalar(1 / (len || 1));
-      var ca = clamp((a * a + Lc * Lc - b * b) / (2 * a * Lc), -1, 1), perp = pole.clone().addScaledVector(dir, -pole.dot(dir));
-      if (perp.lengthSq() < 1e-6) perp.set(0, 0, 1); perp.normalize();
-      return { mid: S.clone().addScaledVector(dir, a * ca).addScaledVector(perp, a * Math.sqrt(1 - ca * ca)), end: S.clone().addScaledVector(dir, Lc) };
+      _dir.subVectors(T, S); var len = _dir.length(), Lc = clamp(len, Math.abs(a - b) + 0.01, (a + b) * 0.999); _dir.multiplyScalar(1 / (len || 1));
+      var ca = clamp((a * a + Lc * Lc - b * b) / (2 * a * Lc), -1, 1); _perp.copy(pole).addScaledVector(_dir, -pole.dot(_dir));
+      if (_perp.lengthSq() < 1e-6) _perp.set(0, 0, 1); _perp.normalize();
+      _ik.mid.copy(S).addScaledVector(_dir, a * ca).addScaledVector(_perp, a * Math.sqrt(1 - ca * ca)); _ik.end.copy(S).addScaledVector(_dir, Lc);
+      return _ik;
+    }
+
+    /* B1: a planted foot stays put until it is too far from where the body wants it, then it takes a quick
+       lifted step. Only one foot steps at a time, so stops and small adjustments read as real footwork.
+       At a full run the gait cycle drives the feet instead; any jump in time (scrubbing) re-plants both. */
+    var plant = [new V3(), new V3()], stepping = null, lastT = null, STEP = 0.16, REACH_ERR = 0.085;
+    function footwork(feet, t, k) {
+      var jump = lastT === null || t < lastT - 1e-4 || t - lastT > 0.12; lastT = t;
+      if (jump || k > 0.72) { plant[0].copy(feet[0]); plant[1].copy(feet[1]); stepping = null; return; }
+      if (stepping && t - stepping.t0 >= STEP) { plant[stepping.i].copy(feet[stepping.i]); stepping = null; }
+      if (!stepping) {
+        var e0 = Math.hypot(feet[0].x - plant[0].x, feet[0].z - plant[0].z), e1 = Math.hypot(feet[1].x - plant[1].x, feet[1].z - plant[1].z);
+        var i = e0 >= e1 ? 0 : 1, e = Math.max(e0, e1);
+        if (e > REACH_ERR) stepping = { i: i, t0: t, from: plant[i].clone() };
+      }
+      for (var j = 0; j < 2; j++) {
+        var y = feet[j].y;
+        if (stepping && stepping.i === j) {
+          var u = Math.min(1, (t - stepping.t0) / STEP), eu = u * u * (3 - 2 * u);
+          feet[j].x = stepping.from.x + (feet[j].x - stepping.from.x) * eu; feet[j].z = stepping.from.z + (feet[j].z - stepping.from.z) * eu;
+          feet[j].y = y + Math.sin(u * Math.PI) * 0.075;
+        } else { feet[j].x = plant[j].x; feet[j].z = plant[j].z; feet[j].y = y; }
+      }
     }
 
     var rig = { group: g, tag: tag, paddle: paddle, eye: new V3(0, 1.45, 0) };
-    rig.setFP = function (on) { upper.visible = !on; };
+    /* first person keeps only the paddle arm in view; the rest of the body would block or clutter the lens */
+    var fpHide = null;
+    rig.setFP = function (on) {
+      if (!fpHide) fpHide = [upper, pelvis, L.sho, L.up, L.elb, L.fore, L.hand, R.sho].concat([L, R].reduce(function (a, s) { return a.concat([s.thigh, s.knee, s.shin, s.foot]); }, []));
+      fpHide.forEach(function (o) { o.visible = !on; });
+    };
     /* p: root (V3 on the floor), yaw, vel (V3), gait (metres run), t, hand (V3 grip), pPos, pQ, w (0..1 swing), bh, ball (V3), hold, hop, split */
     rig.update = function (p) {
       var b = basis(p.yaw), m = p.bh ? -1 : 1, w = p.w, speed = p.vel.length(), k = clamp(speed / 1.6, 0, 1), gph = p.gait / GAIT;
@@ -95,6 +127,7 @@
         var run = p.root.clone().addScaledVector(hbz.r, s * 0.1).addScaledVector(vdir, -s * Math.sin(gph) * GAIT * 0.9);
         var f = stance.lerp(run, k); f.y = ANK + Math.max(0, -s * Math.cos(gph)) * 0.13 * k + p.hop; return f;
       });
+      footwork(feet, p.t, k);
       function build() {
         var neck = hipC.clone().addScaledVector(dir, TORSO), xr = cb.r.clone().addScaledVector(dir, -cb.r.dot(dir)).normalize();
         return { neck: neck, xr: xr, sR: neck.clone().addScaledVector(dir, -0.11).addScaledVector(xr, SHO), sL: neck.clone().addScaledVector(dir, -0.11).addScaledVector(xr, -SHO) };

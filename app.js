@@ -256,21 +256,24 @@
   function build(v) {
     var N = v.path.map(function (n) { var o = {}; for (var k in n) o[k] = n[k]; o.pos = new V3(n.p[0], n.p[1] + BR, n.p[2]); o.floor = n.p[1] === 0; o.surf = surfaceOf(n); return o; });
     var t = N[0].T || 0; N[0].t = t;
+    /* each flight is solved with drag and spin (core.js) so it still lands exactly where and when the scene says */
     var segs = [], mine = false, spin = null, i;
     for (i = 1; i < N.length; i++) {
       var a = N[i - 1], b = N[i];
-      if (a.hit) { mine = true; spin = SW[a.hit].spin; } else if (a.by) { mine = false; spin = null; }
-      segs.push({ t0: t, T: b.T, a: a.pos, b: b.pos, vy: (b.pos.y - a.pos.y + 0.5 * G * b.T * b.T) / b.T, mine: mine, spin: spin });
+      if (a.hit || a.by) { mine = !!a.hit; spin = SW[a.hit || a.sw || "ret"].spin; } else if (a.floor && spin !== "top" && spin !== "back") spin = null;
+      var sol = PBCore.solve([a.pos.x, a.pos.y, a.pos.z], [b.pos.x, b.pos.y, b.pos.z], b.T, spin);
+      segs.push({ t0: t, T: b.T, a: a.pos, b: b.pos, sol: sol, speed: Math.hypot(sol.v0[0], sol.v0[1], sol.v0[2]), mine: mine, spin: spin });
       t += b.T; b.t = t;
     }
-    N.forEach(function (n, idx) { var sg = segs[idx] || segs[idx - 1], sp = sg ? Math.hypot(sg.b.x - sg.a.x, sg.b.z - sg.a.z) / sg.T : 8; n.power = Math.max(0.28, Math.min(1, sp / 24)); });
+    N.forEach(function (n, idx) { var sg = segs[idx] || segs[idx - 1], sp = sg ? sg.speed : 8; n.power = Math.max(0.28, Math.min(1, sp / 22)); });
+    var sides = PBCore.planSides(v, SW);
     /* every strike, by anyone, becomes a full swing: where the feet are, which way the body faces, the paddle face */
     var ah = { you: [], partner: [], o1: [], o2: [] }, start = {};
     N.forEach(function (n, idx) {
       var who = n.hit ? "you" : n.by; if (!who || idx === N.length - 1) return;
       var key = n.hit || n.sw || "ret", sw = SW[key], d = N[idx + 1].pos.clone().sub(n.pos); d.y = 0; d.normalize();
-      var yaw = Math.atan2(-d.x, -d.z), b = basis(yaw), open = (n.open === undefined ? sw.open : n.open) * Math.PI / 180, m = n.bh ? -1 : 1;
-      var h = { t: n.t, sw: sw, key: key, yaw: yaw, b: b, ball: n.pos, open: open, bh: !!n.bh, idx: idx,
+      var yaw = Math.atan2(-d.x, -d.z), b = basis(yaw), open = (n.open === undefined ? sw.open : n.open) * Math.PI / 180, m = sides[idx] || 1;
+      var h = { t: n.t, sw: sw, key: key, yaw: yaw, b: b, ball: n.pos, open: open, bh: m < 0, idx: idx,
         pos: [n.pos.x - b.r.x * sw.R * m - b.f.x * sw.F, n.pos.z - b.r.z * sw.R * m - b.f.z * sw.F],
         nW: d.clone().multiplyScalar(Math.cos(open)).addScaledVector(UP, Math.sin(open)) };
       ah[who].push(h); if (idx === 0) start[who] = h.pos;
@@ -300,10 +303,11 @@
     return { N: N, segs: segs, hits: hits, ah: ah, dist: dist, tr: tr, caps: caps, end: t, dur: t + (v.end || 1.4), start: N[0].t };
   }
 
+  var tmpA = [0, 0, 0];
   function ballAt(t) {
     var s = TL.segs;
     if (t <= TL.start) return { p: TL.N[0].pos.clone(), seg: null };
-    for (var i = 0; i < s.length; i++) { var g = s[i]; if (t <= g.t0 + g.T) { var u = t - g.t0, k = u / g.T; return { p: new V3(g.a.x + (g.b.x - g.a.x) * k, g.a.y + g.vy * u - 0.5 * G * u * u, g.a.z + (g.b.z - g.a.z) * k), seg: g }; } }
+    for (var i = 0; i < s.length; i++) { var g = s[i]; if (t <= g.t0 + g.T) { PBCore.at(g.sol, t - g.t0, g.T, tmpA); return { p: new V3(tmpA[0], tmpA[1], tmpA[2]), seg: g }; } }
     return { p: TL.N[TL.N.length - 1].pos.clone(), seg: null };
   }
   function actorState(id, t) {
@@ -334,15 +338,23 @@
 
   /* ---------- load a variant ---------- */
   function clearGroup(g) { while (g.children.length) { var o = g.children.pop(); if (o.geometry) o.geometry.dispose(); } }
+  function fromHash() {
+    var m = /^#s(\d\d)-([\w-]+)$/.exec(location.hash || ""); if (!m) return null;
+    for (var i = 0; i < CH.length; i++) if (CH[i].no === m[1]) for (var j = 0; j < CH[i].v.length; j++) if (CH[i].v[j].id === m[2]) return { ci: i, vi: j };
+    return null;
+  }
+  window.addEventListener("hashchange", function () { var h = fromHash(); if (h && (h.ci !== S.ci || h.vi !== S.vi)) load(h.ci, h.vi); });
   function load(ci, vi, keepView) {
     S.ci = ci; S.vi = vi; var ch = CH[ci], v = ch.v[vi];
-    TL = build(v); prevT = -9; S.t = -0.6; S.playing = true; S.yawOff = S.pitchOff = 0; camSnap = true; lastCap = ""; lastHitKey = "";
+    try { history.replaceState(null, "", "#s" + ch.no + "-" + v.id); } catch (e) {}
+    wake();
+    TL = build(v); TL.ask = Quiz.plan(ci, vi); if (TL.ask) TL.ask.t = TL.N[TL.ask.idx].t; TL.asked = false; Quiz.hide(); prevT = -9; S.t = -0.6; S.playing = true; S.yawOff = S.pitchOff = 0; camSnap = true; lastCap = ""; lastHitKey = "";
     if (!keepView) S.view = ch.view || "fp";
     for (var i = 0; i < TRAIL * 3; i++) trailPos[i] = 0; trail.userData.n = 0;
     /* trajectory preview */
     clearGroup(pathGroup);
     TL.segs.forEach(function (g) {
-      var pts = []; for (var k = 0; k <= 26; k++) { var u = g.T * k / 26; pts.push(new V3(g.a.x + (g.b.x - g.a.x) * k / 26, g.a.y + g.vy * u - 0.5 * G * u * u, g.a.z + (g.b.z - g.a.z) * k / 26)); }
+      var pts = []; for (var k = 0; k <= 30; k++) { PBCore.at(g.sol, g.T * k / 30, g.T, tmpA); pts.push(new V3(tmpA[0], tmpA[1], tmpA[2])); }
       var l = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineDashedMaterial({ toneMapped: false, color: col(g.mine ? C.ball : C.line), dashSize: 0.22, gapSize: 0.16, transparent: true, opacity: g.mine ? 0.9 : 0.4 }));
       l.computeLineDistances(); pathGroup.add(l);
     });
@@ -415,6 +427,11 @@
     var nW = new V3(0, 0, 1).applyQuaternion(rp.q), faceDeg = Math.asin(Math.max(-1, Math.min(1, nW.y))) * 180 / Math.PI;
     /* camera */
     var k = camSnap ? 1 : 1 - Math.exp(-dt * 7), eye = A.you.eye.clone(), live = t > TL.start - 0.4 && t < TL.end + 0.6;
+    if (S.view === "fp" && rp.hit) {
+      /* low strike: step the eye back and up a little, so the paddle meets the ball above the control dock */
+      var lowW = rp.w * Math.max(0, Math.min(1, (0.8 - (rp.hit.ball.y - BR)) / 0.45)), fb = basis(ys.yaw);
+      eye.addScaledVector(fb.f, -0.4 * lowW); eye.y += 0.18 * lowW;
+    }
     A.you.setFP(S.view === "fp");
     if (S.view === "fp") {
       var tgt = live ? bp : new V3(ys.x * 0.4, 1.0, ys.z - 10), dd = tgt.clone().sub(eye), dl = dd.length(); dd.normalize();
@@ -425,7 +442,7 @@
     } else {
       var pos, look;
       if (S.view === "shoulder") { pos = new V3(ys.x + 1.3, 3.0, ys.z + 4.4); look = new V3(ys.x, 1.5, ys.z).lerp(bp, live ? 0.3 : 0); }
-      else if (S.view === "side") { pos = new V3(ys.x + 4.0, 1.7, ys.z - 0.4); look = rp.pos.clone().lerp(new V3(ys.x, 1.15 + lift, ys.z), 0.35); }
+      else if (S.view === "side") { pos = new V3(ys.x + 4.6, 1.45, ys.z - 0.7); look = rp.pos.clone().lerp(new V3(ys.x, 0.85 + lift, ys.z), 0.55); }
       else { var hgt = Math.max(24, 9 / cam.aspect) / Math.tan(cam.fov * Math.PI / 360) / 2 * 1.08; pos = new V3(0, hgt, 0.01); look = new V3(0, 0, 0); }
       if (S.view !== "top") { var off = pos.clone().sub(new V3(ys.x, 1.3, ys.z)); off.applyAxisAngle(UP, S.yawOff); pos = new V3(ys.x, 1.3, ys.z).add(off); pos.y = Math.max(0.4, pos.y + S.pitchOff * 3); }
       cam.position.lerp(pos, k); cam.up.set(0, 1, 0);
@@ -479,13 +496,30 @@
     };
   })();
 
+  /* D2: when nothing moves, stop drawing. Any input wakes the loop for a moment so the camera can settle. */
+  var wakeUntil = 0;
+  function wake() { wakeUntil = performance.now() + 1600; }
+  ["pointerdown", "pointermove", "keydown", "input", "click", "wheel", "touchstart"].forEach(function (n) { document.addEventListener(n, wake, { passive: true, capture: true }); });
+  window.addEventListener("resize", wake);
+  /* D1: if the effects pass makes the page slow on this device, switch it off once and say so */
+  var perf = { n: 0, sum: 0, done: false };
+  function watchPerf(raw) {
+    if (perf.done || !FX.on() || !S.playing || raw > 250 || document.hidden) return;
+    perf.n++; if (perf.n < 45) return;
+    perf.sum += raw; if (perf.n < 45 + 90) return;
+    perf.done = true;
+    if (perf.sum / 90 > 42) { FX.set(false); var c = $("#tFx"); if (c) c.checked = false; toast("這台裝置畫面較慢，已自動關閉高畫質特效"); }
+  }
   var last = 0;
   function frame(now) {
-    var dt = Math.min(0.05, (now - last) / 1000 || 0); last = now;
+    var raw = now - last, dt = Math.min(0.05, raw / 1000 || 0); last = now;
+    if (!S.playing && !Rec.on && now > wakeUntil) { requestAnimationFrame(frame); return; }
+    watchPerf(raw);
     if (S.playing) {
       var rate = S.speed;
       if (S.freeze) TL.hits.forEach(function (h) { if (Math.abs(S.t - h.t) < 0.045) rate *= 0.07; });
-      S.t += dt * rate;
+      if (TL.ask && !TL.asked && S.t + dt * rate >= TL.ask.t - 0.32) { S.t = TL.ask.t - 0.32; S.playing = false; TL.asked = true; Quiz.ask(); }
+      else S.t += dt * rate;
       if (prevT > -5) TL.N.forEach(function (n) { if (n.surf && n.t > prevT && n.t <= S.t) Snd.play(n.surf, n.surf === "racket" ? n.power : n.power * 0.8, n.pos); });
       prevT = S.t;
       if (S.t >= TL.dur) { S.t = TL.dur; S.playing = false; ui.sync(); }
@@ -493,12 +527,107 @@
     if (!S.playing) prevT = S.t; else if (prevT < -5) prevT = S.t;
     update(S.playing ? dt : 0.016);
     FX.render();
+    if (Rec.on) Rec.frame();
     requestAnimationFrame(frame);
   }
   function resize() { var w = canvas.clientWidth, h = canvas.clientHeight; if (!w || !h) return; renderer.setSize(w, h, false); FX.size(w, h); cam.aspect = w / h; cam.fov = w < h ? 82 : 68;
     /* lift the optical centre above the control dock so the contact point is not hidden behind it */
     var D = Math.round(Math.min(h * 0.3, 210)); cam.setViewOffset(w, h + D, 0, D, w, h); cam.updateProjectionMatrix(); }
   window.addEventListener("resize", resize);
+
+  function toast(msg) { var el = $("#toast"); el.textContent = msg; el.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(function () { el.hidden = true; }, 2600); }
+
+  /* ---------- A1: guess first, then watch ---------- */
+  var Quiz = (function () {
+    var on = false, score = { n: 0, ok: 0 }, cur = null;
+    function anti(v) { return /^✕/.test(v.label); }
+    function strip(l) { return l.replace(/^(GO|ALT|STOP)\s+/, ""); }
+    /* the strike the chapter is about: your first strike after the other side has played, else your first strike */
+    function keyHit(v) {
+      var P = v.path, seen = false, first = -1;
+      for (var i = 0; i < P.length - 1; i++) { if (P[i].by && P[i].by !== "partner") seen = true; if (P[i].hit) { if (first < 0) first = i; if (seen) return i; } }
+      return first;
+    }
+    function eligible(ci) { var ch = CH[ci]; return ch.ask && ch.quiz !== false; }
+    function plan(ci, vi) {
+      if (!on || !eligible(ci)) return null;
+      var ch = CH[ci], v = ch.v[vi]; if (anti(v)) return null;
+      var idx = keyHit(v); if (idx < 0) return null;
+      var pool = ch.v.filter(function (x) { return !anti(x); }), opts, ans;
+      if (ch.quiz === "label") { opts = pool.map(function (x) { return strip(x.label); }); ans = strip(v.label); }
+      else { opts = []; pool.forEach(function (x) { var n = SW[x.path[keyHit(x)].hit].name; if (opts.indexOf(n) < 0) opts.push(n); }); ans = SW[v.path[idx].hit].name; }
+      for (var i = opts.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)), tmp = opts[i]; opts[i] = opts[j]; opts[j] = tmp; }
+      cur = { ci: ci, vi: vi, opts: opts, ans: ans, q: ch.ask };
+      return { idx: idx };
+    }
+    function hide() { $("#quiz").hidden = true; document.body.classList.remove("quiz-ask"); }
+    function head() { $("#qScore").textContent = score.n ? "答對 " + score.ok + " / " + score.n : "決策挑戰"; }
+    function ask() {
+      if (!cur) return;
+      document.body.classList.add("quiz-ask");
+      $("#qAsk").textContent = cur.q; head();
+      $("#qOpts").innerHTML = cur.opts.map(function (o) { return "<button>" + o + "</button>"; }).join("");
+      $("#qResult").hidden = true; $("#qNext").hidden = true; $("#quiz").hidden = false; ui.sync();
+    }
+    function answer(btn) {
+      var ok = btn.textContent === cur.ans, v = CH[cur.ci].v[cur.vi];
+      score.n++; if (ok) score.ok++; head();
+      [].forEach.call($("#qOpts").children, function (b) { b.disabled = true; if (b.textContent === cur.ans) b.classList.add("ok"); });
+      if (!ok) btn.classList.add("no");
+      var r = $("#qResult"); r.innerHTML = "<b>" + (ok ? "✔ 答對！" : "✘ 正解是：" + cur.ans) + "</b>" + (v.why ? "原因：" + v.why : "");
+      r.hidden = false; $("#qNext").hidden = false;
+      document.body.classList.remove("quiz-ask"); S.playing = true; ui.sync();
+    }
+    function next() {
+      var pool = [];
+      CH.forEach(function (ch, ci) { if (eligible(ci)) ch.v.forEach(function (v, vi) { if (!anti(v) && !(ci === S.ci && vi === S.vi)) pool.push([ci, vi]); }); });
+      var p = pool[Math.floor(Math.random() * pool.length)]; load(p[0], p[1]);
+    }
+    function set(v) { on = v; if (on) { score = { n: 0, ok: 0 }; next(); } else { hide(); TL.ask = null; } ui.sync(); }
+    return { plan: function (ci, vi) { var p = plan(ci, vi); if (!p) cur = null; return p; }, ask: ask, answer: answer, next: next, set: set, hide: hide, on: function () { return on; } };
+  })();
+
+  /* ---------- B4: record the current play as a short video, in the viewer's own browser ---------- */
+  var Rec = (function () {
+    var ok = !!(window.MediaRecorder && HTMLCanvasElement.prototype.captureStream), mr = null, rc = null, cx = null, chunks = [], endAt = 0;
+    var mime = ok ? ["video/mp4;codecs=avc1", "video/mp4", "video/webm;codecs=vp9", "video/webm"].filter(function (m) { try { return MediaRecorder.isTypeSupported(m); } catch (e) { return false; } })[0] : null;
+    if (!mime) ok = false;
+    function wrap(text, max) { var lines = [], line = ""; for (var i = 0; i < text.length; i++) { var t = line + text[i]; if (cx.measureText(t).width > max && line) { lines.push(line); line = text[i]; } else line = t; } if (line) lines.push(line); return lines; }
+    function frame() {
+      if (!mr) return;
+      var W = rc.width, H = rc.height, u = Math.min(W, H) / 1080;
+      cx.drawImage(canvas, 0, 0, W, H);
+      var ch = CH[S.ci];
+      cx.fillStyle = "rgba(7,30,61,.82)"; cx.fillRect(28 * u, 28 * u, 620 * u, 96 * u);
+      cx.fillStyle = "#E4F23F"; cx.font = "800 " + (24 * u) + "px 'Big Shoulders Display','Noto Sans TC',sans-serif"; cx.textBaseline = "top"; cx.fillText(ch.en.toUpperCase(), 48 * u, 42 * u);
+      cx.fillStyle = "#F3F7FB"; cx.font = "900 " + (36 * u) + "px 'Noto Sans TC',sans-serif"; cx.fillText(ch.title, 48 * u, 74 * u);
+      if (lastCap) {
+        cx.font = "900 " + (40 * u) + "px 'Noto Sans TC',sans-serif"; var ls = wrap(lastCap, W - 160 * u), lh = 56 * u, y = H - 150 * u - ls.length * lh;
+        ls.forEach(function (l, i) { var w = cx.measureText(l).width; cx.fillStyle = "rgba(7,30,61,.85)"; cx.fillRect((W - w) / 2 - 18 * u, y + i * lh - 6 * u, w + 36 * u, lh); cx.fillStyle = "#F3F7FB"; cx.fillText(l, (W - w) / 2, y + i * lh); });
+      }
+      cx.font = "800 " + (26 * u) + "px 'Big Shoulders Display','Noto Sans TC',sans-serif"; cx.fillStyle = "#E4F23F"; var wm = "PBNINJA.VERCEL.APP · COACH NINJA"; cx.fillText(wm, W - cx.measureText(wm).width - 36 * u, H - 64 * u);
+      if (!S.playing && S.t >= TL.dur - 0.01) { if (!endAt) endAt = performance.now() + 600; else if (performance.now() > endAt) stop(); }
+    }
+    function start() {
+      var w = canvas.width, h = canvas.height, sc = Math.min(1, 1920 / Math.max(w, h));
+      rc = document.createElement("canvas"); rc.width = Math.round(w * sc / 2) * 2; rc.height = Math.round(h * sc / 2) * 2; cx = rc.getContext("2d");
+      chunks = []; endAt = 0;
+      try { mr = new MediaRecorder(rc.captureStream(30), { mimeType: mime, videoBitsPerSecond: 8e6 }); } catch (e) { mr = null; toast("這個瀏覽器無法錄影"); return; }
+      mr.ondataavailable = function (e) { if (e.data && e.data.size) chunks.push(e.data); };
+      mr.onstop = function () {
+        var blob = new Blob(chunks, { type: mime.split(";")[0] }), a = document.createElement("a"), ch = CH[S.ci], v = ch.v[S.vi];
+        if (!blob.size) { toast("這次沒有錄到畫面，請換用 Chrome 或 Safari 再試一次"); return; }
+        a.href = URL.createObjectURL(blob); a.download = "NinjaPB-" + ch.no + "-" + v.id + (mime.indexOf("mp4") >= 0 ? ".mp4" : ".webm");
+        document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 4000);
+        toast("短片已下載" + (mime.indexOf("mp4") >= 0 ? "（MP4）" : "（WebM）"));
+      };
+      mr.start(500); api.on = true;
+      S.t = -0.6; S.playing = true; trail.userData.n = 0; camSnap = true; ui.sync(); toast("錄影中：會從頭播到這一球結束");
+    }
+    function stop() { if (mr && mr.state !== "inactive") mr.stop(); mr = null; api.on = false; ui.sync(); }
+    var api = { ok: ok, on: false, start: start, stop: stop, frame: frame };
+    return api;
+  })();
 
   /* ---------- UI ---------- */
   var ui = (function () {
@@ -522,6 +651,16 @@
     $("#tArrow").addEventListener("change", function (e) { racket.userData.arrow.visible = e.target.checked; });
     var elFx = $("#tFx"); elFx.checked = FX.on(); elFx.disabled = !FX.ok(); if (!FX.ok()) elFx.parentNode.title = "這個瀏覽器不支援高畫質特效";
     elFx.addEventListener("change", function (e) { FX.set(e.target.checked); });
+    $("#quizBtn").addEventListener("click", function () { Quiz.set(!Quiz.on()); });
+    $("#qOpts").addEventListener("click", function (e) { var b = e.target.closest("button"); if (b && !b.disabled) Quiz.answer(b); });
+    $("#qNext").addEventListener("click", function () { Quiz.next(); });
+    $("#qStop").addEventListener("click", function () { Quiz.set(false); });
+    $("#copyLink").addEventListener("click", function () {
+      var url = location.href;
+      try { navigator.clipboard.writeText(url).then(function () { toast("已複製這一球的連結"); }, function () { toast(url); }); } catch (e) { toast(url); }
+    });
+    var elRec = $("#recBtn"); elRec.hidden = !Rec.ok;
+    elRec.addEventListener("click", function () { if (Rec.on) Rec.stop(); else Rec.start(); });
     $("#panelToggle").addEventListener("click", function () { document.body.classList.toggle("panel-open"); });
     $("#prev").addEventListener("click", function () { load((S.ci + CH.length - 1) % CH.length, 0); });
     $("#next").addEventListener("click", function () { load((S.ci + 1) % CH.length, 0); });
@@ -572,6 +711,8 @@
       if (ch.vids) $("#vids").innerHTML = ch.vids.map(function (x) { var t = "<b>" + x[0] + "</b>" + x[1]; return "<li>" + (x[2] ? '<a href="' + x[2] + '" target="_blank" rel="noopener">' + t + "<em>▶ 在 YouTube 觀看</em></a>" : t) + "</li>"; }).join("");
       press($("#views"), S.view); press($("#speeds"), S.speed);
       elScrub.min = -0.6; elScrub.max = TL.dur.toFixed(2); elScrub.step = 0.01;
+      $("#quizBtn").setAttribute("aria-pressed", String(Quiz.on()));
+      elRec.textContent = Rec.on ? "■ 停止錄影" : "錄製短片"; elRec.classList.toggle("on", Rec.on);
       elPlay.textContent = S.playing ? "暫停" : (S.t >= TL.dur - 0.01 ? "重播" : "播放");
     }
     function tick(t, hit, faceDeg) {
@@ -602,7 +743,9 @@
   /* keep place across republish */
   var hot = window.claude && window.claude.hot;
   if (hot && hot.snapshot) hot.snapshot(function () { return { ci: S.ci, vi: S.vi }; });
-  function start(d) { resize(); load(Math.min(CH.length - 1, (d && d.ci) || 0), 0); if (d && d.vi && CH[S.ci].v[d.vi]) load(S.ci, d.vi); requestAnimationFrame(frame); }
-  window.__pb = { TL: function () { return TL; }, cam: cam, A: A, FX: FX, S: S, load: load, Snd: Snd };
+  function start(d) { requestAnimationFrame(function () { requestAnimationFrame(function () { var l = $("#loading"); if (l) { l.classList.add("done"); setTimeout(function () { l.remove(); }, 600); } }); });
+    var hsh = fromHash(); if (hsh) d = hsh;
+    resize(); load(Math.min(CH.length - 1, (d && d.ci) || 0), 0); if (d && d.vi && CH[S.ci].v[d.vi]) load(S.ci, d.vi); requestAnimationFrame(frame); }
+  window.__pb = { snap: function () { camSnap = true; }, update: function (dt) { update(dt); }, TL: function () { return TL; }, cam: cam, A: A, FX: FX, renderer: renderer, Quiz: Quiz, Rec: Rec, S: S, load: load, Snd: Snd };
   if (hot && hot.ready) hot.ready(start); else start((hot && hot.data) || {});
 })();
