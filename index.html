@@ -138,6 +138,7 @@ dt{font-weight:700;color:var(--mute);padding-right:12px;white-space:nowrap}
 #scrub{flex:1 1 180px;min-width:120px;accent-color:var(--ball)}
 .chk{display:inline-flex;gap:5px;align-items:center;font-size:13px;font-weight:500;color:var(--mute)}
 .chk input{accent-color:var(--ball)}
+#more{display:none}
 .lab{font-family:var(--display);font-weight:800;letter-spacing:.12em;font-size:11px;color:var(--mute);text-transform:uppercase}
 #nogl{position:fixed;inset:0;z-index:5;display:grid;place-items:center;padding:24px;text-align:center;background:var(--ink);font-size:16px}
 #nogl[hidden]{display:none}
@@ -157,6 +158,12 @@ dt{font-weight:700;color:var(--mute);padding-right:12px;white-space:nowrap}
   body.panel-open .panel{display:grid}
   .dock{left:8px;right:8px;bottom:8px}
   .bar{padding:8px}
+  /* phones: the dock folds to one row (play, restart, timeline, more); "more" opens the rest */
+  #more{display:inline-block;white-space:nowrap}
+  .bar:not(.open) .extra{display:none}
+  .bar:not(.open) .row{flex-wrap:nowrap}
+  .bar:not(.open) #scrub{min-width:60px}
+  .bar:not(.open) .row button{white-space:nowrap;flex:none}
 }
 /* loading cover, challenge card, toast */
 #loading{position:fixed;inset:0;z-index:4;display:grid;place-items:center;align-content:center;gap:14px;background:var(--ink);transition:opacity .5s}
@@ -259,15 +266,16 @@ body.quiz-ask .panel,body.quiz-ask #variants,body.quiz-ask #badge{visibility:hid
   <div id="badge" hidden></div>
   <div id="caption" aria-live="polite"></div>
   <div class="bar box">
-    <div class="row"><div class="seg" id="variants"></div><button class="ghost" id="copyLink">複製這一球的連結</button></div>
+    <div class="row extra"><div class="seg" id="variants"></div><button class="ghost" id="copyLink">複製這一球的連結</button></div>
     <div class="row">
       <button class="btn" id="play">暫停</button>
       <button class="ghost" id="replay">從頭</button>
       <input type="range" id="scrub" aria-label="時間軸，可拖曳逐格檢視">
-      <span class="lab">速度</span>
-      <div class="seg" id="speeds"><button data-v="1">1×</button><button data-v="0.5">½</button><button data-v="0.25">¼</button></div>
+      <button class="ghost" id="more" aria-expanded="false" aria-label="更多控制選項">⋯ 更多</button>
+      <span class="lab extra">速度</span>
+      <div class="seg extra" id="speeds"><button data-v="1">1×</button><button data-v="0.5">½</button><button data-v="0.25">¼</button></div>
     </div>
-    <div class="row">
+    <div class="row extra">
       <span class="lab">視角</span>
       <div class="seg" id="views"><button data-v="fp">第一人稱</button><button data-v="shoulder">肩後</button><button data-v="side">拍面特寫</button><button data-v="top">俯瞰</button></div>
       <label class="chk"><input type="checkbox" id="tPath" checked>球路軌跡</label>

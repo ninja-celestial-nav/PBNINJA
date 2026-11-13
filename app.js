@@ -622,7 +622,12 @@
   }
   function resize() { var w = canvas.clientWidth, h = canvas.clientHeight; if (!w || !h) return; renderer.setSize(w, h, false); FX.size(w, h); cam.aspect = w / h; cam.fov = w < h ? 82 : 68;
     /* lift the optical centre above the control dock so the contact point is not hidden behind it */
-    var D = Math.round(Math.min(h * 0.3, 210)); cam.setViewOffset(w, h + D, 0, D, w, h); cam.updateProjectionMatrix(); }
+    var bar = document.querySelector(".bar"), bh = bar ? bar.offsetHeight : 160;
+    var D = Math.round(Math.min(h * 0.3, 210, bh * 1.2)); cam.setViewOffset(w, h + D, 0, D, w, h); cam.updateProjectionMatrix(); }
+  (function () {
+    var more = $("#more"), bar = document.querySelector(".bar"); if (!more || !bar) return;
+    more.addEventListener("click", function () { var on = bar.classList.toggle("open"); more.setAttribute("aria-expanded", String(on)); more.textContent = on ? "收合" : "⋯ 更多"; resize(); wake(); });
+  })();
   window.addEventListener("resize", resize);
 
   function toast(msg) { var el = $("#toast"); el.textContent = msg; el.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(function () { el.hidden = true; }, 2600); }
