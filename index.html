@@ -49,6 +49,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .title h1{margin:0;font-size:18px;font-weight:900;line-height:1.3;text-wrap:balance}
 .nav{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
 .nav button,.ghost{background:var(--panel);border:1px solid var(--line);padding:7px 12px;font-weight:700;font-size:13px}
+#toCannon{text-decoration:none;line-height:1.6;white-space:nowrap;color:var(--line)}
 #to2d{background:var(--ball);color:var(--ink);border-color:var(--ball);text-decoration:none;font-weight:900;line-height:1.6;white-space:nowrap}
 .nav button:hover,.ghost:hover{background:rgba(243,247,251,.14)}
 #sound[aria-pressed="true"]{background:var(--ball);color:var(--ink);border-color:var(--ball)}
@@ -219,6 +220,7 @@ body.quiz-ask .panel,body.quiz-ask #variants,body.quiz-ask #badge{visibility:hid
     <button id="panelToggle">技術要點</button>
     <button id="quizBtn" aria-pressed="false">決策挑戰</button>
     <button id="infoBtn">課程與裝備</button>
+    <a class="ghost" id="toCannon" href="/cannon/">砲台模式</a>
     <a class="ghost" id="to2d" href="/2d/">切換到 2D 指南 →</a>
   </div>
 </div>
