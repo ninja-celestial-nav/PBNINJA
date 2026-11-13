@@ -10,50 +10,134 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800;900&family=Noto+Sans+TC:wght@500;700;900&display=swap" rel="stylesheet">
 <style>
-:root{--ink:#071E3D;--panel:rgba(9,34,68,.86);--line:#F3F7FB;--mute:#A9C2DE;--ball:#E4F23F;--danger:#FF6A4D;--rule:rgba(243,247,251,.2);
+:root{--ink:#071E3D;--panel:rgba(9,34,68,.88);--line:#F3F7FB;--mute:#A9C2DE;--ball:#E4F23F;--danger:#FF6A4D;--go:#4FE39B;--rule:rgba(243,247,251,.2);
   --display:"Big Shoulders Display","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif}
 *{box-sizing:border-box}
-html,body{margin:0;height:100%;background:var(--ink);color:var(--line);font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;overflow:hidden;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--ink);color:var(--line);font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;overflow:hidden;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
 canvas{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:crosshair}
 .box{background:var(--panel);border:1px solid var(--rule);backdrop-filter:blur(8px)}
-button,.up{font:inherit;font-weight:700;font-size:14px;color:var(--line);background:transparent;border:1px solid var(--rule);padding:8px 12px;cursor:pointer;white-space:nowrap}
+button,.up{font:inherit;font-weight:700;font-size:14px;color:var(--line);background:transparent;border:1px solid var(--rule);padding:8px 12px;cursor:pointer;white-space:nowrap;text-decoration:none}
+button:disabled{opacity:.35;cursor:default}
 .btn{background:var(--ball);color:var(--ink);border-color:var(--ball)}
-#top{position:fixed;left:12px;right:12px;top:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:8px 10px}
+.up input{display:none}
+[hidden]{display:none!important}
+#top{position:fixed;left:12px;right:12px;top:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:8px 10px;z-index:3}
 #top h1{margin:0 6px 0 0;font-family:var(--display);font-weight:900;font-size:22px;letter-spacing:.04em}
 #top h1 small{display:block;font-size:11px;letter-spacing:.14em;color:var(--ball);font-weight:800}
 #top .sp{flex:1}
-.up input{display:none}
-#hud{position:fixed;right:12px;top:84px;padding:10px 12px;display:grid;gap:6px;min-width:170px}
-#hud b{font-family:var(--display);font-size:30px;line-height:1;color:var(--ball)}
-#hud .row{display:flex;justify-content:space-between;gap:12px;align-items:baseline;font-size:13px;color:var(--mute)}
-#meter{height:10px;background:rgba(255,255,255,.12);overflow:hidden}
-#meter i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--ball),var(--danger));transition:width .25s}
-#hint{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);padding:9px 14px;font-size:14px;text-align:center;pointer-events:none}
-#win{position:fixed;left:50%;top:74%;transform:translate(-50%,-50%);padding:18px 22px;text-align:center;display:grid;gap:10px}
-#win[hidden]{display:none}
-#win h2{margin:0;font-family:var(--display);font-weight:900;font-size:34px;color:var(--ball)}
 #priv{font-size:12px;color:var(--mute)}
-@media (max-width:700px){#top h1{font-size:18px}#hud{top:auto;bottom:64px;right:8px;min-width:140px}#top{left:8px;right:8px;top:8px}#priv{display:none}}
+#hud{position:fixed;right:12px;top:84px;padding:10px 12px;display:grid;gap:6px;min-width:190px;z-index:2}
+#hud .big{font-family:var(--display);font-size:34px;line-height:1;color:var(--ball)}
+#hud .row{display:flex;justify-content:space-between;gap:12px;align-items:baseline;font-size:13px;color:var(--mute)}
+#hud .row b{font-family:var(--display);font-size:22px;color:var(--line)}
+.meter{height:9px;background:rgba(255,255,255,.12);overflow:hidden}
+.meter i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--ball),var(--danger));transition:width .25s}
+#timer{font-family:var(--display);font-size:30px;color:var(--danger)}
+#ammo{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);display:flex;gap:6px;padding:6px;z-index:2}
+#ammo button{display:grid;justify-items:center;gap:1px;padding:6px 10px;font-size:13px}
+#ammo button small{font-size:10.5px;color:var(--mute);font-weight:500}
+#ammo button[aria-pressed="true"]{background:var(--ball);color:var(--ink);border-color:var(--ball)}
+#ammo button[aria-pressed="true"] small{color:var(--ink)}
+#mg{border-color:var(--danger);color:var(--danger)}
+#mg.on{background:var(--danger);color:#fff}
+.dodge{position:fixed;bottom:84px;z-index:2;font-size:18px;padding:14px 16px}
+#dl{left:12px}#dr{right:12px}
+#combo{position:fixed;left:50%;top:92px;transform:translateX(-50%);font-family:var(--display);font-weight:900;font-size:44px;color:var(--ball);text-shadow:0 3px 0 #071E3D,0 0 18px rgba(228,242,63,.6);pointer-events:none;z-index:2;transition:transform .12s}
+#combo.pop{transform:translateX(-50%) scale(1.25)}
+#combo small{display:block;text-align:center;font-size:16px;color:var(--line)}
+.pop{position:fixed;pointer-events:none;font-family:var(--display);font-weight:900;font-size:40px;color:#fff;-webkit-text-stroke:2px #d9472f;text-shadow:0 4px 0 #071E3D;z-index:4;animation:pop .9s ease-out forwards;white-space:nowrap}
+.pop.sm{font-size:24px;-webkit-text-stroke:1px #071E3D;color:var(--ball)}
+@keyframes pop{0%{transform:translate(-50%,-50%) scale(.4);opacity:0}15%{transform:translate(-50%,-60%) scale(1.25);opacity:1}100%{transform:translate(-50%,-160%) scale(1);opacity:0}}
+#warn{position:fixed;left:50%;top:40%;transform:translate(-50%,-50%);font-family:var(--display);font-weight:900;font-size:36px;color:var(--danger);text-shadow:0 3px 0 #071E3D;pointer-events:none;z-index:4;animation:blink .25s steps(2) infinite}
+@keyframes blink{50%{opacity:.35}}
+#flash{position:fixed;inset:0;pointer-events:none;z-index:3;box-shadow:inset 0 0 140px 40px rgba(255,40,30,.75);opacity:0;transition:opacity .35s}
+#flash.on{opacity:1;transition:none}
+#charge{position:fixed;width:66px;height:66px;border-radius:50%;transform:translate(-50%,-50%);pointer-events:none;z-index:4;
+  background:conic-gradient(var(--danger) calc(var(--k)*360deg),rgba(255,255,255,.18) 0);-webkit-mask:radial-gradient(circle,transparent 24px,#000 25px);mask:radial-gradient(circle,transparent 24px,#000 25px)}
+#replayTag{position:fixed;left:16px;bottom:16px;z-index:4;font-family:var(--display);font-weight:900;font-size:22px;color:var(--danger);padding:6px 12px}
+#hint{position:fixed;left:50%;bottom:86px;transform:translateX(-50%);padding:8px 14px;font-size:13.5px;text-align:center;pointer-events:none;z-index:2}
+.card{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);padding:20px 22px;display:grid;gap:12px;width:min(520px,calc(100% - 24px));max-height:calc(100% - 24px);overflow:auto;z-index:5}
+.card h2{margin:0;font-family:var(--display);font-weight:900;font-size:34px;color:var(--ball);line-height:1.05}
+.card h2 small{display:block;font-size:13px;letter-spacing:.14em;color:var(--mute)}
+.card p{margin:0;color:var(--mute);font-size:14px;line-height:1.6}
+.modes{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.modes button{display:grid;gap:4px;padding:12px 8px;text-align:center;white-space:normal}
+.modes button small{font-weight:500;font-size:12px;color:var(--mute)}
+.opt{display:flex;gap:8px;align-items:center;font-size:14px;flex-wrap:wrap}
+.opt input[type=text]{flex:1;min-width:200px;font:inherit;font-size:14px;padding:8px 10px;background:rgba(255,255,255,.08);color:var(--line);border:1px solid var(--rule)}
+.opt input[type=checkbox]{accent-color:var(--ball);width:18px;height:18px}
+.lb{display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px}
+.lb h3{margin:0 0 4px;font-size:13px;color:var(--ball);letter-spacing:.06em}
+.lb ol{margin:0;padding-left:20px;color:var(--mute)}
+.lb ol li b{color:var(--line);font-family:var(--display);font-size:17px}
+#resTitle{font-size:26px;font-weight:900;color:var(--line)}
+#resScore{font-family:var(--display);font-size:56px;font-weight:900;color:var(--ball);line-height:1}
+.acts{display:flex;gap:8px;flex-wrap:wrap}
+@media (max-width:700px){
+  #top h1{font-size:17px}#priv{display:none}#top{left:6px;right:6px;top:6px;padding:6px 8px;gap:6px}#top button,#top .up{padding:6px 8px;font-size:12.5px}
+  #hud{top:auto;bottom:146px;right:6px;min-width:132px;padding:7px 9px;gap:3px}#hud .big{font-size:26px}#hud .row b{font-size:18px}
+  #ammo{bottom:8px;width:calc(100% - 12px);justify-content:space-between;gap:3px}#ammo button{padding:5px 4px;font-size:12px;flex:1}#ammo button small{display:none}
+  .dodge{bottom:66px;padding:12px 14px}#hint{bottom:66px;font-size:12px;max-width:52%}
+  #combo{top:118px;font-size:34px}.modes{grid-template-columns:1fr}
+  #replayTag{bottom:auto;top:96px;left:8px;font-size:18px}
+}
 </style>
 </head>
 <body>
 <canvas id="c"></canvas>
 <div id="top" class="box">
   <h1><small>NINJAPB · CANNON</small>砲台模式</h1>
-  <label class="up btn">上傳對手照片<input type="file" id="file" accept="image/*"></label>
-  <button id="clear">換回忍者臉</button>
+  <label class="up btn">上傳 <span id="upA">對手</span> 臉<input type="file" id="fileA" accept="image/*"></label>
+  <label class="up btn" id="upBWrap" hidden>上傳 B 臉<input type="file" id="fileB" accept="image/*"></label>
+  <button id="clear">換回預設臉</button>
   <span id="priv">照片只在你的裝置上處理，不會上傳</span>
   <span class="sp"></span>
-  <a href="/" class="up" style="text-decoration:none">← 回到戰術場</a>
+  <button id="menuBtn">選單</button>
+  <a href="/" class="up">← 戰術場</a>
 </div>
 <div id="hud" class="box">
-  <div class="row"><span>命中</span><b id="hits">0</b></div>
-  <div class="row"><span>打臉</span><b id="faces">0</b></div>
-  <div class="row"><span>哀嚎值</span><span id="pct">0%</span></div>
-  <div id="meter"><i></i></div>
+  <div class="row"><span>分數</span><span class="big" id="score">0</span></div>
+  <div class="row" id="timerRow" hidden><span>剩餘</span><span id="timer">60</span></div>
+  <div class="row" id="levelRow" hidden><span>關卡</span><b id="level">1</b></div>
+  <div class="row"><span>命中 / 打臉</span><b id="hf">0 / 0</b></div>
+  <div id="pains"></div>
 </div>
-<div id="hint" class="box">點畫面任何地方發射，瞄準對手的臉！</div>
-<div id="win" class="box" hidden><h2>對手投降了！</h2><div id="winTxt"></div><button class="btn" id="again">再來一輪</button></div>
+<div id="combo" hidden></div>
+<div id="ammo" class="box">
+  <button data-a="normal" aria-pressed="true">普通<small>標準</small></button>
+  <button data-a="big">大顆<small>好打中</small></button>
+  <button data-a="fast">超快<small>直線高速</small></button>
+  <button data-a="split">分裂<small>一變三</small></button>
+  <button data-a="bounce">彈跳<small>落地打腳</small></button>
+  <button id="mg" hidden>🔥 連發</button>
+</div>
+<button class="box dodge" id="dl" aria-label="向左閃">◀ 閃</button>
+<button class="box dodge" id="dr" aria-label="向右閃">閃 ▶</button>
+<div id="hint" class="box">點一下發射，按住蓄力再放開更強！</div>
+<div id="flash"></div>
+<div id="charge" hidden></div>
+<div id="warn" hidden>⚠ 對手反擊！快閃！</div>
+<div id="replayTag" class="box" hidden>慢動作重播 ▶</div>
+
+<div id="menu" class="card box">
+  <h2><small>NINJAPB · CANNON</small>選擇玩法</h2>
+  <div class="modes">
+    <button class="btn" data-m="free">自由練習<small>想怎麼打就怎麼打</small></button>
+    <button data-m="timed">計時挑戰<small>60 秒拚分數</small></button>
+    <button data-m="levels">關卡模式<small>5 關，最後有 Boss</small></button>
+  </div>
+  <label class="opt"><input type="checkbox" id="duo">兩個對手（各放一張臉，打一個另一個會幸災樂禍）</label>
+  <div class="opt"><span>自訂哀嚎台詞</span><input type="text" id="custom" placeholder="用逗號分開，例如：我再也不敢了，對不起嘛"></div>
+  <div class="lb"><div><h3>計時挑戰最高分</h3><ol id="lbTimed"></ol></div><div><h3>關卡模式最高分</h3><ol id="lbLevels"></ol></div></div>
+  <p>排行榜只存在這台裝置的瀏覽器裡。</p>
+</div>
+<div id="result" class="card box" hidden>
+  <h2 id="resHead">時間到！</h2>
+  <div id="resScore">0</div>
+  <div id="resTitle"></div>
+  <p id="resTxt"></p>
+  <div class="acts"><button class="btn" id="resAgain">再玩一次</button><button id="resMenu">回選單</button><button id="resKeep" hidden>繼續修理他</button></div>
+</div>
 <script src="/vendor/three.min.js"></script>
 <script src="/vendor/GLTFLoader.js"></script>
 <script src="/rig.js"></script>

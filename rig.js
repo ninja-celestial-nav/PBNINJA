@@ -131,7 +131,7 @@
       var low = clamp((1.0 - hy) / 0.7, 0, 1) * w;
       var chestYaw = p.yaw - twist, hipYaw = p.yaw - twist * 0.4, cb = basis(chestYaw), hbz = basis(hipYaw);
       var hipC = p.root.clone().addScaledVector(b.f, clamp(lz - 0.35, -0.3, 0.4) * 0.32 * w).addScaledVector(b.r, clamp(lx - 0.25 * m, -0.35, 0.35) * 0.3 * w);
-      hipC.y = HIP - 0.02 + LR * (-0.2 * low - 0.06 * p.split * (1 - k) - 0.03 * k + Math.abs(Math.sin(gph)) * 0.035 * k) + p.hop;
+      hipC.y = HIP - 0.02 + LR * (-0.2 * low - 0.06 * p.split * (1 - k) - 0.03 * k + Math.abs(Math.sin(gph)) * 0.035 * k) + p.hop - (p.duck || 0) * (TH + SH) * 0.75;
       var dir = UP.clone().addScaledVector(hbz.f, Math.tan(0.07 + 0.4 * low + 0.17 * k)).addScaledVector(b.r, clamp(lx, -0.5, 0.6) * 0.2 * w).normalize();
       /* feet: a stance that opens with the trunk, or a running gait */
       var half = 0.15 + 0.08 * low + 0.06 * p.split, st = 0.18 * twist, vdir = speed > 0.05 ? p.vel.clone().multiplyScalar(1 / speed) : b.f;
@@ -177,7 +177,7 @@
         .addScaledVector(T.xr, AR * (0.02 + 0.2 * Math.max(0, -tw) - 0.06 * Math.max(0, tw)));
       arm(L, T.sL, lt, new V3().addScaledVector(UP, -0.9).addScaledVector(T.xr, -0.5).addScaledVector(cb.f, -0.35));
       /* head: stays level and watches the ball */
-      var hd = T.neck.clone().addScaledVector(dir.clone().add(UP).normalize(), HEAD), look = p.ball.clone().sub(hd), ll = look.length() || 1;
+      var hd = T.neck.clone().addScaledVector(dir.clone().add(UP).normalize(), HEAD), look = (p.look || p.ball).clone().sub(hd), ll = look.length() || 1;
       var want = Math.atan2(-look.x, -look.z);
       head.position.copy(hd); head.rotation.order = "YXZ";
       head.rotation.set(clamp(Math.asin(clamp(look.y / ll, -1, 1)), -0.55, 0.5), chestYaw + clamp(angDiff(chestYaw, want), -1.0, 1.0), 0);
