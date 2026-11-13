@@ -201,6 +201,7 @@
         M.multiply(_s);
       }
       M.setPosition(pos);
+      if (rig.xform) M.premultiply(rig.xform);      /* whole-body transform: thrown, slipping, a wider build */
     }
     /* swing the child from its bind direction to the solved one, measured in the parent's frame */
     function swing(out, parentQ, i, from, to) {
@@ -250,5 +251,7 @@
     return { mesh: main, arm: arm, skeleton: skel };
   }
 
-  root.NinjaMascot = { load: load, attach: attach, PROP: PROP };
+  /* extra colourways: spec { cloth: [r,g,b], lo, gain, trim: [r,g,b] or null } */
+  function defineTeam(name, spec) { TEAMS[name] = spec; }
+  root.NinjaMascot = { load: load, attach: attach, PROP: PROP, defineTeam: defineTeam, material: function (t) { return base ? material(t) : null; } };
 })(window);
